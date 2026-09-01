@@ -1,4 +1,4 @@
--- MM2 Custom Menu (Delta Executor) - Compact Size (Scale ~16.5)
+-- MM2 Custom Menu (Delta Executor) - Адаптивный размер под экран 16.5 / Любое разрешение
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -11,16 +11,16 @@ local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "MM2CustomHub"
 ScreenGui.Parent = game.CoreGui
 
--- ЭКРАН ЗАГРУЗКИ
+-- ЭКРАН ЗАГРУЗКИ (Адаптированный)
 local LoadFrame = Instance.new("Frame")
-LoadFrame.Size = UDim2.new(0, 180, 0, 75)
-LoadFrame.Position = UDim2.new(0.5, -90, 0.5, -37)
+LoadFrame.Size = UDim2.new(0, 220, 0, 85)
+LoadFrame.Position = UDim2.new(0.5, -110, 0.5, -42)
 LoadFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 LoadFrame.BorderSizePixel = 0
 LoadFrame.Parent = ScreenGui
 
 local LoadCorner = Instance.new("UICorner")
-LoadCorner.CornerRadius = UDim.new(0, 8)
+LoadCorner.CornerRadius = UDim.new(0, 10)
 LoadCorner.Parent = LoadFrame
 
 local LoadGradient = Instance.new("UIGradient")
@@ -33,18 +33,18 @@ LoadGradient.Rotation = 45
 LoadGradient.Parent = LoadFrame
 
 local LoadText = Instance.new("TextLabel")
-LoadText.Size = UDim2.new(1, 0, 0, 30)
-LoadText.Position = UDim2.new(0, 0, 0, 10)
+LoadText.Size = UDim2.new(1, 0, 0, 35)
+LoadText.Position = UDim2.new(0, 0, 0, 12)
 LoadText.BackgroundTransparency = 1
-LoadText.Text = "Загрузка..."
+LoadText.Text = "Загрузка скрипта..."
 LoadText.TextColor3 = Color3.fromRGB(255, 255, 255)
-LoadText.TextSize = 12
+LoadText.TextSize = 14
 LoadText.Font = Enum.Font.SourceSansBold
 LoadText.Parent = LoadFrame
 
 local BarBg = Instance.new("Frame")
-BarBg.Size = UDim2.new(0, 150, 0, 6)
-BarBg.Position = UDim2.new(0.5, -75, 0, 48)
+BarBg.Size = UDim2.new(0, 180, 0, 8)
+BarBg.Position = UDim2.new(0.5, -90, 0, 55)
 BarBg.BackgroundColor3 = Color3.fromRGB(20, 20, 35)
 BarBg.BorderSizePixel = 0
 BarBg.Parent = LoadFrame
@@ -54,7 +54,7 @@ BarBgCorner.CornerRadius = UDim.new(1, 0)
 BarBgCorner.Parent = BarBg
 
 local BarFill = Instance.new("Frame")
-BarFill.Size = UDim2.new(0, 0, 0, 6)
+BarFill.Size = UDim2.new(0, 0, 0, 8)
 BarFill.BackgroundColor3 = Color3.fromRGB(0, 191, 255)
 BarFill.BorderSizePixel = 0
 BarFill.Parent = BarBg
@@ -63,10 +63,10 @@ local BarFillCorner = Instance.new("UICorner")
 BarFillCorner.CornerRadius = UDim.new(1, 0)
 BarFillCorner.Parent = BarFill
 
-TweenService:Create(BarFill, TweenInfo.new(1.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(1, 0, 0, 6)}):Play()
+TweenService:Create(BarFill, TweenInfo.new(1.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(1, 0, 0, 8)}):Play()
 task.wait(1.6)
 
-TweenService:Create(LoadFrame, Inst:new(0.4, Enum.EasingStyle.Sine), {BackgroundTransparency = 1}):Play()
+TweenService:Create(LoadFrame, TweenInfo.new(0.4, Enum.EasingStyle.Sine), {BackgroundTransparency = 1}):Play()
 for _, child in ipairs(LoadFrame:GetDescendants()) do
     if child:IsA("TextLabel") or child:IsA("Frame") then
         TweenService:Create(child, TweenInfo.new(0.4, Enum.EasingStyle.Sine), {BackgroundTransparency = 1}):Play()
@@ -80,11 +80,11 @@ LoadFrame:Destroy()
 
 -- КРУГЛАЯ КНОПКА (Открыть/Закрыть)
 local ToggleButton = Instance.new("TextButton")
-ToggleButton.Size = UDim2.new(0, 35, 0, 35)
-ToggleButton.Position = UDim2.new(0, 15, 0.5, -17)
+ToggleButton.Size = UDim2.new(0, 40, 0, 40)
+ToggleButton.Position = UDim2.new(0, 20, 0.5, -20)
 ToggleButton.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
 ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleButton.TextSize = 11
+ToggleButton.TextSize = 12
 ToggleButton.Font = Enum.Font.SourceSansBold
 ToggleButton.Text = "MM2"
 ToggleButton.Active = true
@@ -102,18 +102,23 @@ ToggleGradient.Color = ColorSequence.new({
 })
 ToggleGradient.Parent = ToggleButton
 
--- ОСНОВНОЕ МЕНЮ (Компактный размер)
+-- ОСНОВНОЕ МЕНЮ (Используем UIScale для точной адаптации без поломок)
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 165, 0, 340)
-MainFrame.Position = UDim2.new(0.5, -82, 0.5, -170)
+MainFrame.Size = UDim2.new(0, 190, 0, 380)
+MainFrame.Position = UDim2.new(0.5, -95, 0.5, -190)
 MainFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.Parent = ScreenGui
 
+-- Масштабирование под экраны (включая устройства с нестандартными пропорциями)
+local UiScale = Instance.new("UIScale")
+UiScale.Scale = 1.05
+UiScale.Parent = MainFrame
+
 local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 6)
+UICorner.CornerRadius = UDim.new(0, 8)
 UICorner.Parent = MainFrame
 
 local UIGradient = Instance.new("UIGradient")
@@ -137,21 +142,21 @@ task.spawn(function()
 end)
 
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 30)
+Title.Size = UDim2.new(1, 0, 0, 35)
 Title.BackgroundTransparency = 1
-Title.Text = "MM2 Compact"
+Title.Text = "MM2 Menu"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 12
+Title.TextSize = 14
 Title.Font = Enum.Font.SourceSansBold
 Title.Parent = MainFrame
 
 local CloseBtn = Instance.new("TextButton")
-CloseBtn.Size = UDim2.new(0, 24, 0, 24)
-CloseBtn.Position = UDim2.new(1, -26, 0, 3)
+CloseBtn.Size = UDim2.new(0, 28, 0, 28)
+CloseBtn.Position = UDim2.new(1, -32, 0, 4)
 CloseBtn.BackgroundTransparency = 1
 CloseBtn.Text = "X"
 CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseBtn.TextSize = 12
+CloseBtn.TextSize = 14
 CloseBtn.Font = Enum.Font.SourceSansBold
 CloseBtn.Parent = MainFrame
 
@@ -165,18 +170,18 @@ end)
 
 local function createButton(name, posY)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 145, 0, 26)
-    btn.Position = UDim2.new(0.5, -72, 0, posY)
+    btn.Size = UDim2.new(0, 166, 0, 30)
+    btn.Position = UDim2.new(0.5, -83, 0, posY)
     btn.BackgroundColor3 = Color3.fromRGB(20, 20, 35)
     btn.BackgroundTransparency = 0.3
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.TextSize = 10
+    btn.TextSize = 12
     btn.Font = Enum.Font.SourceSans
     btn.Text = name .. ": OFF"
     btn.Parent = MainFrame
     
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 4)
+    corner.CornerRadius = UDim.new(0, 6)
     corner.Parent = btn
     
     return btn
@@ -184,32 +189,32 @@ end
 
 local function createSkyButton(name, posY)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 145, 0, 26)
-    btn.Position = UDim2.new(0.5, -72, 0, posY)
+    btn.Size = UDim2.new(0, 166, 0, 30)
+    btn.Position = UDim2.new(0.5, -83, 0, posY)
     btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
     btn.BackgroundTransparency = 0.3
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.TextSize = 10
+    btn.TextSize = 12
     btn.Font = Enum.Font.SourceSansBold
     btn.Text = name
     btn.Parent = MainFrame
     
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 4)
+    corner.CornerRadius = UDim.new(0, 6)
     corner.Parent = btn
     
     return btn
 end
 
-local EspBtn = createButton("ESP", 35)
-local CoinFarmBtn = createButton("Автофарм", 65)
-local AutoKillBtn = createButton("Авто-убийство", 95)
-local GrabGunBtn = createButton("Взять пистолет", 125)
-local KillerAimBtn = createButton("Наводка", 155)
-local SkyBtn = createSkyButton("Небо: Стандарт", 185)
-local CloudsBtn = createSkyButton("Облака: Шторм", 215)
-local GroupBtn = createSkyButton("Группа / Дискорд", 245)
-local SkyOffBtn = createSkyButton("Сбросить всё", 275)
+local EspBtn = createButton("ESP", 40)
+local CoinFarmBtn = createButton("Автофарм", 75)
+local AutoKillBtn = createButton("Авто-убийство", 110)
+local GrabGunBtn = createButton("Взять пистолет", 145)
+local KillerAimBtn = createButton("Наводка", 180)
+local SkyBtn = createSkyButton("Небо: Стандарт", 215)
+local CloudsBtn = createSkyButton("Облака: Шторм", 250)
+local GroupBtn = createSkyButton("Группа / Дискорд", 285)
+local SkyOffBtn = createSkyButton("Сбросить всё", 320)
 
 local espEnabled = false
 local coinFarmEnabled = false
@@ -448,3 +453,4 @@ RunService.RenderStepped:Connect(function()
         end)
     end
 end)
+
