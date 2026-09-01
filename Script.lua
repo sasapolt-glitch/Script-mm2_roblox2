@@ -1,4 +1,4 @@
--- Delta MM2 GUI Script с раздельными подгруппами для каждой категории
+-- Delta MM2 GUI Script (С соотношением сторон 16:5 / Вытянутый и компактный макет)
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
@@ -15,7 +15,7 @@ local autoKillInnocents = false
 
 -- Создание графического интерфейса
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "MM2DeltaSubgroupsGUI"
+ScreenGui.Name = "MM2Delta16_5GUI"
 ScreenGui.ResetOnSpawn = false
 
 if syn and syn.protect_gui then
@@ -27,9 +27,10 @@ else
     ScreenGui.Parent = CoreGui
 end
 
+-- Адаптация под формат 16:5 (широкое горизонтальное или компактно-вытянутое окно)
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 300, 0, 480)
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -240)
+MainFrame.Size = UDim2.new(0, 480, 0, 150)
+MainFrame.Position = UDim2.new(0.5, -240, 0.5, -75)
 MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
@@ -40,13 +41,14 @@ local UICorner = Instance.new("UICorner")
 UICorner.CornerRadius = UDim.new(0, 8)
 UICorner.Parent = MainFrame
 
+-- Верхняя панель (Шапка)
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 40)
+Title.Size = UDim2.new(1, 0, 0, 30)
 Title.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 16
+Title.TextSize = 14
 Title.Font = Enum.Font.GothamBold
-Title.Text = "MM2 Delta Hub [Subgroups]"
+Title.Text = "MM2 Delta Hub [16:5 Layout]"
 Title.Parent = MainFrame
 
 local TitleCorner = Instance.new("UICorner")
@@ -54,11 +56,11 @@ TitleCorner.CornerRadius = UDim.new(0, 8)
 TitleCorner.Parent = Title
 
 local CloseCircleBtn = Instance.new("TextButton")
-CloseCircleBtn.Size = UDim2.new(0, 26, 0, 26)
-CloseCircleBtn.Position = UDim2.new(1, -33, 0, 7)
+CloseCircleBtn.Size = UDim2.new(0, 20, 0, 20)
+CloseCircleBtn.Position = UDim2.new(1, -25, 0, 5)
 CloseCircleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
 CloseCircleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseCircleBtn.TextSize = 12
+CloseCircleBtn.TextSize = 10
 CloseCircleBtn.Font = Enum.Font.GothamBold
 CloseCircleBtn.Text = "X"
 CloseCircleBtn.Parent = Title
@@ -67,55 +69,65 @@ local CloseCorner = Instance.new("UICorner")
 CloseCorner.CornerRadius = UDim.new(1, 0)
 CloseCorner.Parent = CloseCircleBtn
 
--- Функция создания заголовка категории
-local function createCategoryLabel(text, positionY)
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(0, 260, 0, 22)
-    label.Position = UDim2.new(0, 20, 0, positionY)
-    label.BackgroundTransparency = 1
-    label.TextColor3 = Color3.fromRGB(150, 150, 255)
-    label.TextSize = 13
-    label.Font = Enum.Font.GothamBold
-    label.Text = text
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.Parent = MainFrame
-    return label
+-- Функция создания колонок (подгрупп) для широкого экрана
+local function createColumn(posX, titleText)
+    local container = Instance.new("Frame")
+    container.Size = UDim2.new(0, 145, 0, 105)
+    container.Position = UDim2.new(0, posX, 0, 38)
+    container.BackgroundColor3 = Color3.fromRGB(38, 38, 38)
+    container.BorderSizePixel = 0
+    container.Parent = MainFrame
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 6)
+    corner.Parent = container
+
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(1, 0, 0, 22)
+    lbl.BackgroundTransparency = 1
+    lbl.TextColor3 = Color3.fromRGB(150, 150, 255)
+    lbl.TextSize = 11
+    lbl.Font = Enum.Font.GothamBold
+    lbl.Text = titleText
+    lbl.Parent = container
+
+    return container
 end
 
--- Функция создания кнопки функционала
-local function createButton(positionY, defaultText)
+-- Функция создания кнопки внутри колонки
+local function createColumnButton(parent, posY, defaultText)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 260, 0, 30)
-    btn.Position = UDim2.new(0, 20, 0, positionY)
+    btn.Size = UDim2.new(0, 135, 0, 24)
+    btn.Position = UDim2.new(0, 5, 0, posY)
     btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.TextSize = 13
+    btn.TextSize = 10
     btn.Font = Enum.Font.GothamSemibold
     btn.Text = defaultText .. ": OFF"
-    btn.Parent = MainFrame
+    btn.Parent = parent
 
     local btnCorner = Instance.new("UICorner")
-    btnCorner.CornerRadius = UDim.new(0, 6)
+    btnCorner.CornerRadius = UDim.new(0, 4)
     btnCorner.Parent = btn
 
     return btn
 end
 
--- === СТРУКТУРА МЕНЮ С ДЕТАЛЬНЫМИ ПОДГРУППАМИ ===
+-- === РАСПРЕДЕЛЕНИЕ ПО КОЛОНКАМ (ФОРМАТ 16:5) ===
 
--- Категория 1: Автофарм
-createCategoryLabel("📦 Категория: Автофарм", 45)
-local BtnFarmCoins = createButton(70, "Автофарм монет")
+-- Колонка 1: Автофарм
+local Col1 = createColumn(10, "📦 Автофарм")
+local BtnFarmCoins = createColumnButton(Col1, 26, "Монеты")
+local BtnGrabGun = createColumnButton(Col1, 54, "Пистолет")
 
--- Категория 2: Шериф (Действия с пистолетом)
-createCategoryLabel("🔫 Категория: Шериф", 110)
-local BtnGrabGun = createButton(135, "Автоподнимание пистолета")
+-- Колонка 2: Убийства (Убийца / Шериф)
+local Col2 = createColumn(165, "⚔️ Убийства")
+local BtnAutoKillMurderer = createColumnButton(Col2, 26, "Убийцы")
+local BtnAutoKillSheriff = createColumnButton(Col2, 54, "Шерифа")
 
--- Категория 3: Убийства (Раздельные подцели)
-createCategoryLabel("⚔️ Категория: Убийства", 175)
-local BtnAutoKillMurderer = createButton(200, "Убийство Убийцы")
-local BtnAutoKillSheriff = createButton(235, "Убийство Шерифа")
-local BtnAutoKillInnocents = createButton(270, "Убийство Мирных")
+-- Колонка 3: Мирные (Доп. цели)
+local Col3 = createColumn(320, "🎯 Мирные")
+local BtnAutoKillInnocents = createColumnButton(Col3, 26, "Мирных")
 
 -- Кнопка сворачивания меню
 local OpenCircleBtn = Instance.new("TextButton")
@@ -135,34 +147,34 @@ local OpenCorner = Instance.new("UICorner")
 OpenCorner.CornerRadius = UDim.new(1, 0)
 OpenCorner.Parent = OpenCircleBtn
 
--- Обработчики нажатий кнопок
+-- Обработчики нажатий
 BtnFarmCoins.MouseButton1Click:Connect(function()
     autoFarmCoins = not autoFarmCoins
-    BtnFarmCoins.Text = "Автофарм монет: " .. (autoFarmCoins and "ON" or "OFF")
+    BtnFarmCoins.Text = "Монеты: " .. (autoFarmCoins and "ON" or "OFF")
     BtnFarmCoins.BackgroundColor3 = autoFarmCoins and Color3.fromRGB(40, 150, 40) or Color3.fromRGB(60, 60, 60)
 end)
 
 BtnGrabGun.MouseButton1Click:Connect(function()
     autoGrabGun = not autoGrabGun
-    BtnGrabGun.Text = "Автоподнимание пистолета: " .. (autoGrabGun and "ON" or "OFF")
+    BtnGrabGun.Text = "Пистолет: " .. (autoGrabGun and "ON" or "OFF")
     BtnGrabGun.BackgroundColor3 = autoGrabGun and Color3.fromRGB(40, 150, 40) or Color3.fromRGB(60, 60, 60)
 end)
 
 BtnAutoKillMurderer.MouseButton1Click:Connect(function()
     autoKillMurderer = not autoKillMurderer
-    BtnAutoKillMurderer.Text = "Убийство Убийцы: " .. (autoKillMurderer and "ON" or "OFF")
+    BtnAutoKillMurderer.Text = "Убийцы: " .. (autoKillMurderer and "ON" or "OFF")
     BtnAutoKillMurderer.BackgroundColor3 = autoKillMurderer and Color3.fromRGB(40, 150, 40) or Color3.fromRGB(60, 60, 60)
 end)
 
 BtnAutoKillSheriff.MouseButton1Click:Connect(function()
     autoKillSheriff = not autoKillSheriff
-    BtnAutoKillSheriff.Text = "Убийство Шерифа: " .. (autoKillSheriff and "ON" or "OFF")
+    BtnAutoKillSheriff.Text = "Шерифа: " .. (autoKillSheriff and "ON" or "OFF")
     BtnAutoKillSheriff.BackgroundColor3 = autoKillSheriff and Color3.fromRGB(40, 150, 40) or Color3.fromRGB(60, 60, 60)
 end)
 
 BtnAutoKillInnocents.MouseButton1Click:Connect(function()
     autoKillInnocents = not autoKillInnocents
-    BtnAutoKillInnocents.Text = "Убийство Мирных: " .. (autoKillInnocents and "ON" or "OFF")
+    BtnAutoKillInnocents.Text = "Мирных: " .. (autoKillInnocents and "ON" or "OFF")
     BtnAutoKillInnocents.BackgroundColor3 = autoKillInnocents and Color3.fromRGB(40, 150, 40) or Color3.fromRGB(60, 60, 60)
 end)
 
@@ -182,7 +194,7 @@ RunService.Stepped:Connect(function()
     if not char or not char:FindFirstChild("HumanoidRootPart") then return end
     local rootPart = char.HumanoidRootPart
 
-    -- 1. Автоподнимание пистолета (Категория: Шериф)
+    -- 1. Автоподнимание пистолета
     if autoGrabGun then
         pcall(function()
             for _, v in ipairs(Workspace:GetDescendants()) do
@@ -196,7 +208,7 @@ RunService.Stepped:Connect(function()
         end)
     end
 
-    -- 2. Автофарм монет (Категория: Автофарм)
+    -- 2. Автофарм монет
     if autoFarmCoins then
         pcall(function()
             for _, folder in ipairs(Workspace:GetChildren()) do
@@ -217,7 +229,7 @@ RunService.Stepped:Connect(function()
         end)
     end
 
-    -- 3. Автоубийства по ролям (Категория: Убийства)
+    -- 3. Автоубийства по ролям
     pcall(function()
         local knife = char:FindFirstChild("Knife") or LocalPlayer.Backpack:FindFirstChild("Knife")
         if knife then
@@ -245,4 +257,3 @@ RunService.Stepped:Connect(function()
         end
     end)
 end)
-
