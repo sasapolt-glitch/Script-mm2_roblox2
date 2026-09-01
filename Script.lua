@@ -1,4 +1,4 @@
--- MM2 Custom Menu (Delta Executor) with Killer Aimbot, Sky Changer & Blue Gradient UI
+-- MM2 Custom Menu (Delta Executor) with Clouds, Toggle UI, and Blue Gradient
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -11,9 +11,33 @@ local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "MM2CustomHub"
 ScreenGui.Parent = game.CoreGui
 
+-- Круглая кнопка для открытия/закрытия меню на экране
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Size = UDim2.new(0, 45, 0, 45)
+ToggleButton.Position = UDim2.new(0, 20, 0.5, -25)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.TextSize = 14
+ToggleButton.Font = Enum.Font.SourceSansBold
+ToggleButton.Text = "MM2"
+ToggleButton.Active = true
+ToggleButton.Draggable = true
+ToggleButton.Parent = ScreenGui
+
+local ToggleCorner = Instance.new("UICorner")
+ToggleCorner.CornerRadius = UDim.new(1, 0)
+ToggleCorner.Parent = ToggleButton
+
+local ToggleGradient = Instance.new("UIGradient")
+ToggleGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(10, 30, 80)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 191, 255))
+})
+ToggleGradient.Parent = ToggleButton
+
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 220, 0, 350)
-MainFrame.Position = UDim2.new(0.5, -110, 0.5, -175)
+MainFrame.Size = UDim2.new(0, 220, 0, 395)
+MainFrame.Position = UDim2.new(0.5, -110, 0.5, -197)
 MainFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
@@ -54,6 +78,25 @@ Title.TextSize = 16
 Title.Font = Enum.Font.SourceSansBold
 Title.Parent = MainFrame
 
+-- Кнопка закрытия внутри самого меню (крестик)
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 30, 0, 30)
+CloseBtn.Position = UDim2.new(1, -35, 0, 5)
+CloseBtn.BackgroundTransparency = 1
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.TextSize = 16
+CloseBtn.Font = Enum.Font.SourceSansBold
+CloseBtn.Parent = MainFrame
+
+CloseBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = false
+end)
+
+ToggleButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+end)
+
 -- Функция создания обычных кнопок-тумблеров
 local function createButton(name, posY)
     local btn = Instance.new("TextButton")
@@ -74,7 +117,7 @@ local function createButton(name, posY)
     return btn
 end
 
--- Функция создания выпадающего меню/кнопки для смены неба
+-- Функция создания кнопок для неба/облаков
 local function createSkyButton(name, posY)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(0, 180, 0, 35)
@@ -100,9 +143,8 @@ local AutoKillBtn = createButton("Автоубийство (Шериф)", 130)
 local GrabGunBtn = createButton("Автоподнятие пистолета", 170)
 local KillerAimBtn = createButton("Автонаводка (Убийца)", 210)
 local SkyBtn = createSkyButton("Небо: Обычное", 255)
-
--- Дополнительная кнопка для сброса/выключения неба
-local SkyOffBtn = createSkyButton("Убрать кастомное небо", 295)
+local CloudsBtn = createSkyButton("Облака: Много (Шторм)", 295)
+local SkyOffBtn = createSkyButton("Сбросить всё (Стандарт)", 335)
 
 -- Переменные состояния
 local espEnabled = false
@@ -110,33 +152,51 @@ local coinFarmEnabled = false
 local autoKillEnabled = false
 local grabGunEnabled = false
 local killerAimEnabled = false
-local skyMode = 0 -- 0: Обычное, 1: Космос/Ночь, 2: Аниме/Пурпурное, 3: Золотой Закат
+local skyMode = 0
+local cloudsEnabled = false
 
--- Проверка роли убийцы
 local function isMurderer(player)
     local backpack = player:FindFirstChild("Backpack")
     local character = player.Character
     return (backpack and backpack:FindFirstChild("Knife")) or (character and character:FindFirstChild("Knife"))
 end
 
--- Проверка роли шерифа
 local function isSheriff(player)
     local backpack = player:FindFirstChild("Backpack")
     local character = player.Character
     return (backpack and backpack:FindFirstChild("Gun")) or (character and character:FindFirstChild("Gun"))
 end
 
+-- Управление облаками через встроенный сервис Terrain
+local function toggleClouds(state)
+    local terrain = Workspace:FindFirstChildOfClass("Terrain")
+    if terrain and terrain:FindFirstChildOfClass("Clouds") then
+        terrain.Clouds.Enabled = state
+        if state then
+            terrain.Clouds.Density = 0.9  -- Максимальная плотность облаков
+            terrain.Clouds.Cover = 1.0    -- Полное покрытие неба облаками
+        end
+    else
+        -- Если у Terrain нет облаков по умолчанию, создаем их
+        if state then
+            local clouds = Instance.new("Clouds")
+            clouds.Enabled = true
+            clouds.Density = 0.9
+            clouds.Cover = 1.0
+            clouds.Parent = terrain
+        end
+    end
+end
+
 -- Функция смены неба
 local function changeSky(mode)
-    -- Удаляем старое кастомное небо, если оно есть
     for _, obj in ipairs(Lighting:GetChildren()) do
-        if obj:IsA("Sky") or obj:IsA("Atmosphere") or obj:IsA("PostEffect") then
+        if obj:IsA("Sky") or obj:IsA("Atmosphere") then
             obj:Destroy()
         end
     end
     
     if mode == 1 then
-        -- Космос (Звёздное небо)
         local sky = Instance.new("Sky")
         sky.Name = "CustomSky"
         sky.SkyboxBk = "rbxassetid://826021201"
@@ -148,7 +208,6 @@ local function changeSky(mode)
         sky.Parent = Lighting
         Lighting.ClockTime = 0
     elseif mode == 2 then
-        -- Пурпурное / Аниме небо
         local sky = Instance.new("Sky")
         sky.Name = "CustomSky"
         sky.SkyboxBk = "rbxassetid://156811421"
@@ -160,7 +219,6 @@ local function changeSky(mode)
         sky.Parent = Lighting
         Lighting.ClockTime = 18
     elseif mode == 3 then
-        -- Золотой закат
         local sky = Instance.new("Sky")
         sky.Name = "CustomSky"
         sky.SkyboxBk = "rbxassetid://626463363"
@@ -174,7 +232,6 @@ local function changeSky(mode)
     end
 end
 
--- Логика подсветки (ESP)
 local function updateEsp()
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Character then
@@ -240,7 +297,6 @@ KillerAimBtn.MouseButton1Click:Connect(function()
     KillerAimBtn.BackgroundColor3 = killerAimEnabled and Color3.fromRGB(0, 100, 200) or Color3.fromRGB(20, 20, 35)
 end)
 
--- Переключение неба по клику на кнопку
 SkyBtn.MouseButton1Click:Connect(function()
     skyMode = skyMode + 1
     if skyMode > 3 then skyMode = 1 end
@@ -257,9 +313,18 @@ SkyBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+CloudsBtn.MouseButton1Click:Connect(function()
+    cloudsEnabled = not cloudsEnabled
+    toggleClouds(cloudsEnabled)
+    CloudsBtn.Text = cloudsEnabled and "Облака: Включены (Много)" or "Облака: Выключены"
+end)
+
 SkyOffBtn.MouseButton1Click:Connect(function()
     skyMode = 0
-    SkyBtn.Text = "Небо: Стандартное"
+    cloudsEnabled = false
+    SkyBtn.Text = "Небо: Обычное"
+    CloudsBtn.Text = "Облака: Много (Шторм)"
+    toggleClouds(false)
     for _, obj in ipairs(Lighting:GetChildren()) do
         if obj:IsA("Sky") then
             obj:Destroy()
@@ -268,7 +333,6 @@ SkyOffBtn.MouseButton1Click:Connect(function()
     Lighting.ClockTime = 14
 end)
 
--- Основной цикл работы функций
 RunService.RenderStepped:Connect(function()
     if espEnabled then
         pcall(updateEsp)
@@ -346,3 +410,4 @@ RunService.RenderStepped:Connect(function()
         end)
     end
 end)
+
