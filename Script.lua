@@ -1,17 +1,19 @@
--- MM2 Custom Menu (Delta Executor) with Smooth Blue Gradient UI
+-- MM2 Custom Menu (Delta Executor) with Killer Aimbot, Sky Changer & Blue Gradient UI
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 local TweenService = game:GetService("TweenService")
+local Lighting = game:GetService("Lighting")
 local LocalPlayer = Players.LocalPlayer
+local Camera = Workspace.CurrentCamera
 
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "MM2CustomHub"
 ScreenGui.Parent = game.CoreGui
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 220, 0, 260)
-MainFrame.Position = UDim2.new(0.5, -110, 0.5, -130)
+MainFrame.Size = UDim2.new(0, 220, 0, 350)
+MainFrame.Position = UDim2.new(0.5, -110, 0.5, -175)
 MainFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
@@ -22,7 +24,7 @@ local UICorner = Instance.new("UICorner")
 UICorner.CornerRadius = UDim.new(0, 8)
 UICorner.Parent = MainFrame
 
--- Переливающийся градиент для интерфейса
+-- Переливающийся синий градиент интерфейса
 local UIGradient = Instance.new("UIGradient")
 UIGradient.Color = ColorSequence.new({
     ColorSequenceKeypoint.new(0, Color3.fromRGB(10, 30, 80)),
@@ -32,7 +34,6 @@ UIGradient.Color = ColorSequence.new({
 UIGradient.Rotation = 45
 UIGradient.Parent = MainFrame
 
--- Анимация переливания градиента
 task.spawn(function()
     while true do
         local tween1 = TweenService:Create(UIGradient, TweenInfo.new(3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {Rotation = 225})
@@ -53,7 +54,7 @@ Title.TextSize = 16
 Title.Font = Enum.Font.SourceSansBold
 Title.Parent = MainFrame
 
--- Функция создания кнопок-тумблеров
+-- Функция создания обычных кнопок-тумблеров
 local function createButton(name, posY)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(0, 180, 0, 35)
@@ -61,7 +62,7 @@ local function createButton(name, posY)
     btn.BackgroundColor3 = Color3.fromRGB(20, 20, 35)
     btn.BackgroundTransparency = 0.3
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.TextSize = 14
+    btn.TextSize = 13
     btn.Font = Enum.Font.SourceSans
     btn.Text = name .. ": OFF"
     btn.Parent = MainFrame
@@ -73,16 +74,105 @@ local function createButton(name, posY)
     return btn
 end
 
-local EspBtn = createButton("ESP (Подсветка)", 55)
-local CoinFarmBtn = createButton("Автофарм монет", 100)
-local AutoKillBtn = createButton("Автоубийство", 145)
-local GrabGunBtn = createButton("Автоподнятие пистолета", 190)
+-- Функция создания выпадающего меню/кнопки для смены неба
+local function createSkyButton(name, posY)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 180, 0, 35)
+    btn.Position = UDim2.new(0.5, -90, 0, posY)
+    btn.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+    btn.BackgroundTransparency = 0.3
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.TextSize = 13
+    btn.Font = Enum.Font.SourceSansBold
+    btn.Text = name
+    btn.Parent = MainFrame
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 6)
+    corner.Parent = btn
+    
+    return btn
+end
+
+local EspBtn = createButton("ESP (Подсветка)", 50)
+local CoinFarmBtn = createButton("Автофарм монет", 90)
+local AutoKillBtn = createButton("Автоубийство (Шериф)", 130)
+local GrabGunBtn = createButton("Автоподнятие пистолета", 170)
+local KillerAimBtn = createButton("Автонаводка (Убийца)", 210)
+local SkyBtn = createSkyButton("Небо: Обычное", 255)
+
+-- Дополнительная кнопка для сброса/выключения неба
+local SkyOffBtn = createSkyButton("Убрать кастомное небо", 295)
 
 -- Переменные состояния
 local espEnabled = false
 local coinFarmEnabled = false
 local autoKillEnabled = false
 local grabGunEnabled = false
+local killerAimEnabled = false
+local skyMode = 0 -- 0: Обычное, 1: Космос/Ночь, 2: Аниме/Пурпурное, 3: Золотой Закат
+
+-- Проверка роли убийцы
+local function isMurderer(player)
+    local backpack = player:FindFirstChild("Backpack")
+    local character = player.Character
+    return (backpack and backpack:FindFirstChild("Knife")) or (character and character:FindFirstChild("Knife"))
+end
+
+-- Проверка роли шерифа
+local function isSheriff(player)
+    local backpack = player:FindFirstChild("Backpack")
+    local character = player.Character
+    return (backpack and backpack:FindFirstChild("Gun")) or (character and character:FindFirstChild("Gun"))
+end
+
+-- Функция смены неба
+local function changeSky(mode)
+    -- Удаляем старое кастомное небо, если оно есть
+    for _, obj in ipairs(Lighting:GetChildren()) do
+        if obj:IsA("Sky") or obj:IsA("Atmosphere") or obj:IsA("PostEffect") then
+            obj:Destroy()
+        end
+    end
+    
+    if mode == 1 then
+        -- Космос (Звёздное небо)
+        local sky = Instance.new("Sky")
+        sky.Name = "CustomSky"
+        sky.SkyboxBk = "rbxassetid://826021201"
+        sky.SkyboxDn = "rbxassetid://826021430"
+        sky.SkyboxFt = "rbxassetid://826021614"
+        sky.SkyboxLf = "rbxassetid://826021816"
+        sky.SkyboxRt = "rbxassetid://826022060"
+        sky.SkyboxUp = "rbxassetid://826022294"
+        sky.Parent = Lighting
+        Lighting.ClockTime = 0
+    elseif mode == 2 then
+        -- Пурпурное / Аниме небо
+        local sky = Instance.new("Sky")
+        sky.Name = "CustomSky"
+        sky.SkyboxBk = "rbxassetid://156811421"
+        sky.SkyboxDn = "rbxassetid://156811433"
+        sky.SkyboxFt = "rbxassetid://156811449"
+        sky.SkyboxLf = "rbxassetid://156811466"
+        sky.SkyboxRt = "rbxassetid://156811486"
+        sky.SkyboxUp = "rbxassetid://156811504"
+        sky.Parent = Lighting
+        Lighting.ClockTime = 18
+    elseif mode == 3 then
+        -- Золотой закат
+        local sky = Instance.new("Sky")
+        sky.Name = "CustomSky"
+        sky.SkyboxBk = "rbxassetid://626463363"
+        sky.SkyboxDn = "rbxassetid://626463283"
+        sky.SkyboxFt = "rbxassetid://626463462"
+        sky.SkyboxLf = "rbxassetid://626463581"
+        sky.SkyboxRt = "rbxassetid://626463724"
+        sky.SkyboxUp = "rbxassetid://626463851"
+        sky.Parent = Lighting
+        Lighting.ClockTime = 17.5
+    end
+end
 
 -- Логика подсветки (ESP)
 local function updateEsp()
@@ -97,17 +187,12 @@ local function updateEsp()
                     highlight.Parent = player.Character
                 end
                 
-                local backpack = player:FindFirstChild("Backpack")
-                local character = player.Character
-                local hasKnife = (backpack and backpack:FindFirstChild("Knife")) or (character and character:FindFirstChild("Knife"))
-                local hasGun = (backpack and backpack:FindFirstChild("Gun")) or (character and character:FindFirstChild("Gun"))
-                
-                if hasKnife then
-                    highlight.FillColor = Color3.fromRGB(255, 0, 0) -- Убийца (красный)
-                elseif hasGun then
-                    highlight.FillColor = Color3.fromRGB(0, 0, 255) -- Шериф (синий)
+                if isMurderer(player) then
+                    highlight.FillColor = Color3.fromRGB(255, 0, 0)
+                elseif isSheriff(player) then
+                    highlight.FillColor = Color3.fromRGB(0, 0, 255)
                 else
-                    highlight.FillColor = Color3.fromRGB(0, 255, 0) -- Мирный (зеленый)
+                    highlight.FillColor = Color3.fromRGB(0, 255, 0)
                 end
             else
                 if highlight then
@@ -139,7 +224,7 @@ end)
 
 AutoKillBtn.MouseButton1Click:Connect(function()
     autoKillEnabled = not autoKillEnabled
-    AutoKillBtn.Text = "Автоубийство: " .. (autoKillEnabled and "ON" or "OFF")
+    AutoKillBtn.Text = "Автоубийство (Шериф): " .. (autoKillEnabled and "ON" or "OFF")
     AutoKillBtn.BackgroundColor3 = autoKillEnabled and Color3.fromRGB(0, 100, 200) or Color3.fromRGB(20, 20, 35)
 end)
 
@@ -149,13 +234,46 @@ GrabGunBtn.MouseButton1Click:Connect(function()
     GrabGunBtn.BackgroundColor3 = grabGunEnabled and Color3.fromRGB(0, 100, 200) or Color3.fromRGB(20, 20, 35)
 end)
 
+KillerAimBtn.MouseButton1Click:Connect(function()
+    killerAimEnabled = not killerAimEnabled
+    KillerAimBtn.Text = "Автонаводка (Убийца): " .. (killerAimEnabled and "ON" or "OFF")
+    KillerAimBtn.BackgroundColor3 = killerAimEnabled and Color3.fromRGB(0, 100, 200) or Color3.fromRGB(20, 20, 35)
+end)
+
+-- Переключение неба по клику на кнопку
+SkyBtn.MouseButton1Click:Connect(function()
+    skyMode = skyMode + 1
+    if skyMode > 3 then skyMode = 1 end
+    
+    if skyMode == 1 then
+        SkyBtn.Text = "Небо: Космос"
+        changeSky(1)
+    elseif skyMode == 2 then
+        SkyBtn.Text = "Небо: Пурпурное"
+        changeSky(2)
+    elseif skyMode == 3 then
+        SkyBtn.Text = "Небо: Золотой Закат"
+        changeSky(3)
+    end
+end)
+
+SkyOffBtn.MouseButton1Click:Connect(function()
+    skyMode = 0
+    SkyBtn.Text = "Небо: Стандартное"
+    for _, obj in ipairs(Lighting:GetChildren()) do
+        if obj:IsA("Sky") then
+            obj:Destroy()
+        end
+    end
+    Lighting.ClockTime = 14
+end)
+
 -- Основной цикл работы функций
 RunService.RenderStepped:Connect(function()
     if espEnabled then
         pcall(updateEsp)
     end
     
-    -- Автофарм монет
     if coinFarmEnabled then
         pcall(function()
             local coinContainer = Workspace:FindFirstChild("CoinContainer") or Workspace:FindFirstChild("Coins")
@@ -171,7 +289,6 @@ RunService.RenderStepped:Connect(function()
         end)
     end
     
-    -- Автоподнятие пистолета
     if grabGunEnabled then
         pcall(function()
             for _, obj in ipairs(Workspace:GetChildren()) do
@@ -182,7 +299,6 @@ RunService.RenderStepped:Connect(function()
         end)
     end
     
-    -- Автоубийство убийцы
     if autoKillEnabled then
         pcall(function()
             local character = LocalPlayer.Character
@@ -191,12 +307,40 @@ RunService.RenderStepped:Connect(function()
             if hasGunEquipped then
                 for _, player in ipairs(Players:GetPlayers()) do
                     if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                        local pBackpack = player:FindFirstChild("Backpack")
-                        local pChar = player.Character
-                        if (pBackpack and pBackpack:FindFirstChild("Knife")) or (pChar and pChar:FindFirstChild("Knife")) then
+                        if isMurderer(player) then
                             hasGunEquipped:FindFirstChild("RemoteEvent"):FireServer(player.Character.HumanoidRootPart.Position)
                         end
                     end
+                end
+            end
+        end)
+    end
+
+    if killerAimEnabled then
+        pcall(function()
+            local character = LocalPlayer.Character
+            if isMurderer(LocalPlayer) and character and character:FindFirstChild("HumanoidRootPart") then
+                local closestPlayer = nil
+                local shortestDistance = math.huge
+                
+                for _, player in ipairs(Players:GetPlayers()) do
+                    if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                        if not isMurderer(player) then
+                            local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+                            if humanoid and humanoid.Health > 0 then
+                                local distance = (character.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
+                                if distance < shortestDistance then
+                                    shortestDistance = distance
+                                    closestPlayer = player
+                                end
+                            end
+                        end
+                    end
+                end
+                
+                if closestPlayer and closestPlayer.Character:FindFirstChild("Head") then
+                    local targetHead = closestPlayer.Character.Head
+                    Camera.CFrame = CFrame.new(Camera.CFrame.Position, targetHead.Position)
                 end
             end
         end)
