@@ -1,4 +1,4 @@
--- MM2 Custom Menu (Delta Executor) with Clouds, Toggle UI, and Blue Gradient
+-- MM2 Custom Menu (Delta Executor) with Group, Clouds, Toggle UI, and Blue Gradient
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -36,8 +36,8 @@ ToggleGradient.Color = ColorSequence.new({
 ToggleGradient.Parent = ToggleButton
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 220, 0, 395)
-MainFrame.Position = UDim2.new(0.5, -110, 0.5, -197)
+MainFrame.Size = UDim2.new(0, 220, 0, 440)
+MainFrame.Position = UDim2.new(0.5, -110, 0.5, -220)
 MainFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
@@ -144,7 +144,10 @@ local GrabGunBtn = createButton("Автоподнятие пистолета", 1
 local KillerAimBtn = createButton("Автонаводка (Убийца)", 210)
 local SkyBtn = createSkyButton("Небо: Обычное", 255)
 local CloudsBtn = createSkyButton("Облака: Много (Шторм)", 295)
-local SkyOffBtn = createSkyButton("Сбросить всё (Стандарт)", 335)
+
+-- Кнопка для открытия группы/сообщества (например, скопировать ссылку или открыть)
+local GroupBtn = createSkyButton("Наша Группа / Discord", 335)
+local SkyOffBtn = createSkyButton("Сбросить всё (Стандарт)", 375)
 
 -- Переменные состояния
 local espEnabled = false
@@ -167,17 +170,15 @@ local function isSheriff(player)
     return (backpack and backpack:FindFirstChild("Gun")) or (character and character:FindFirstChild("Gun"))
 end
 
--- Управление облаками через встроенный сервис Terrain
 local function toggleClouds(state)
     local terrain = Workspace:FindFirstChildOfClass("Terrain")
     if terrain and terrain:FindFirstChildOfClass("Clouds") then
         terrain.Clouds.Enabled = state
         if state then
-            terrain.Clouds.Density = 0.9  -- Максимальная плотность облаков
-            terrain.Clouds.Cover = 1.0    -- Полное покрытие неба облаками
+            terrain.Clouds.Density = 0.9
+            terrain.Clouds.Cover = 1.0
         end
     else
-        -- Если у Terrain нет облаков по умолчанию, создаем их
         if state then
             local clouds = Instance.new("Clouds")
             clouds.Enabled = true
@@ -188,7 +189,6 @@ local function toggleClouds(state)
     end
 end
 
--- Функция смены неба
 local function changeSky(mode)
     for _, obj in ipairs(Lighting:GetChildren()) do
         if obj:IsA("Sky") or obj:IsA("Atmosphere") then
@@ -317,6 +317,18 @@ CloudsBtn.MouseButton1Click:Connect(function()
     cloudsEnabled = not cloudsEnabled
     toggleClouds(cloudsEnabled)
     CloudsBtn.Text = cloudsEnabled and "Облака: Включены (Много)" or "Облака: Выключены"
+end)
+
+-- Действие при нажатии на кнопку группы
+GroupBtn.MouseButton1Click:Connect(function()
+    pcall(function()
+        if setclipboard then
+            setclipboard("https://roblox.com/groups/yourgroup") -- Ссылка на вашу группу или Discord
+            GroupBtn.Text = "Ссылка скопирована!"
+            task.wait(2)
+            GroupBtn.Text = "Наша Группа / Discord"
+        end
+    end)
 end)
 
 SkyOffBtn.MouseButton1Click:Connect(function()
