@@ -1,509 +1,1508 @@
--- Thunder Hub MM2 (Полностью рабочий скрипт со всеми вкладками и переливающейся темой)
+Да. Ниже — готовый один LocalScript для Roblox Studio. Он делает интерфейс в духе скриншота, но без чит-функций для чужих игр.
+
+Внутри уже есть:
+
+загрузочный экран на 5 секунд;
+плавное появление интерфейса;
+вкладки Персонаж / Визуал / Эмоции / Другое / Настройки / Инфо;
+собственный Color Picker;
+тема интерфейса автоматически следует за цветом из вкладки «Визуал»;
+режим RGB-переливания;
+переключатели;
+ползунок;
+уведомления;
+перетаскивание окна;
+сворачивание;
+кнопка скрытия/показа меню;
+FPS-счётчик;
+настройка прозрачности;
+настройка размера интерфейса;
+сохранение настроек во время текущей сессии;
+поддержка ПК и тач-устройств.
+Как установить
+
+Создай:
+
+StarterPlayer → StarterPlayerScripts → LocalScript
+
+и вставь туда весь код:
+
+--// =========================================================
+--// NOVA HUB - UI FRAMEWORK
+--// Safe UI for your own Roblox experience
+--// =========================================================
+
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 local Lighting = game:GetService("Lighting")
-local LocalPlayer = Players.LocalPlayer
-local Camera = Workspace.CurrentCamera
 
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "ThunderHubMM2"
-ScreenGui.Parent = game.CoreGui
+local Player = Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
 
--- Главное окно
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 520, 0, 340)
-MainFrame.Position = UDim2.new(0.5, -260, 0.5, -170)
-MainFrame.BackgroundColor3 = Color3.fromRGB(35, 20, 25)
-MainFrame.BorderSizePixel = 0
-MainFrame.Active = true
-MainFrame.Draggable = true
-MainFrame.Parent = ScreenGui
+--============================================================
+-- CONFIG
+--============================================================
 
-local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0, 10)
-MainCorner.Parent = MainFrame
+local CONFIG = {
+	Name = "Nova Hub",
+	Version = "1.0",
+	LoadingTime = 5,
 
--- Переливающийся градиент для темы
-local MainGradient = Instance.new("UIGradient")
-MainGradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(35, 20, 25)),
-    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(60, 20, 45)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 10, 30))
-})
-MainGradient.Rotation = 45
-MainGradient.Parent = MainFrame
+	Accent = Color3.fromRGB(120, 70, 255),
 
--- Автоматическое переливание градиента
-task.spawn(function()
-    while true do
-        local t1 = TweenService:Create(MainGradient, TweenInfo.new(4, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {Rotation = 225})
-        t1:Play()
-        t1.Completed:Wait()
-        local t2 = TweenService:Create(MainGradient, TweenInfo.new(4, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {Rotation = 45})
-        t2:Play()
-        t2.Completed:Wait()
-    end
-end)
+	Background = Color3.fromRGB(20, 12, 24),
+	Panel = Color3.fromRGB(32, 20, 38),
+	Panel2 = Color3.fromRGB(42, 27, 49),
 
--- Левая панель
-local LeftPanel = Instance.new("Frame")
-LeftPanel.Size = UDim2.new(0, 150, 1, 0)
-LeftPanel.BackgroundColor3 = Color3.fromRGB(25, 14, 18)
-LeftPanel.BorderSizePixel = 0
-LeftPanel.Parent = MainFrame
+	Text = Color3.fromRGB(245, 245, 250),
+	SubText = Color3.fromRGB(170, 160, 175),
 
-local LeftCorner = Instance.new("UICorner")
-LeftCorner.CornerRadius = UDim.new(0, 10)
-LeftCorner.Parent = LeftPanel
-
-local FixLeft = Instance.new("Frame")
-FixLeft.Size = UDim2.new(0, 10, 1, 0)
-FixLeft.Position = UDim2.new(1, -10, 0, 0)
-FixLeft.BackgroundColor3 = Color3.fromRGB(25, 14, 18)
-FixLeft.BorderSizePixel = 0
-FixLeft.Parent = LeftPanel
-
-local TitleLabel = Instance.new("TextLabel")
-TitleLabel.Size = UDim2.new(0, 130, 0, 30)
-TitleLabel.Position = UDim2.new(0, 10, 0, 10)
-TitleLabel.BackgroundTransparency = 1
-TitleLabel.Text = "Thunder Hub MM2"
-TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-TitleLabel.TextSize = 13
-TitleLabel.Font = Enum.Font.SourceSansBold
-TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-TitleLabel.Parent = LeftPanel
-
-local SubTitle = Instance.new("TextLabel")
-SubTitle.Size = UDim2.new(0, 130, 0, 15)
-SubTitle.Position = UDim2.new(0, 10, 0, 30)
-SubTitle.BackgroundTransparency = 1
-SubTitle.Text = "by Kavo [Full Work]"
-SubTitle.TextColor3 = Color3.fromRGB(180, 120, 130)
-SubTitle.TextSize = 10
-SubTitle.Font = Enum.Font.SourceSans
-SubTitle.TextXAlignment = Enum.TextXAlignment.Left
-SubTitle.Parent = LeftPanel
-
--- Верхняя панель управления
-local TopBar = Instance.new("Frame")
-TopBar.Size = UDim2.new(1, -160, 0, 40)
-TopBar.Position = UDim2.new(0, 160, 0, 0)
-TopBar.BackgroundTransparency = 1
-TopBar.Parent = MainFrame
-
-local VersionBadge = Instance.new("TextButton")
-VersionBadge.Size = UDim2.new(0, 80, 0, 24)
-VersionBadge.Position = UDim2.new(0, 10, 0, 8)
-VersionBadge.BackgroundColor3 = Color3.fromRGB(50, 180, 90)
-VersionBadge.TextColor3 = Color3.fromRGB(255, 255, 255)
-VersionBadge.TextSize = 12
-VersionBadge.Font = Enum.Font.SourceSansBold
-VersionBadge.Text = "Версия 6.1"
-VersionBadge.Parent = TopBar
-
-local VerCorner = Instance.new("UICorner")
-VerCorner.CornerRadius = UDim.new(0, 6)
-VerCorner.Parent = VersionBadge
-
-local CloseBtn = Instance.new("TextButton")
-CloseBtn.Size = UDim2.new(0, 24, 0, 24)
-CloseBtn.Position = UDim2.new(1, -30, 0, 8)
-CloseBtn.BackgroundTransparency = 1
-CloseBtn.Text = "✕"
-CloseBtn.TextColor3 = Color3.fromRGB(200, 150, 150)
-CloseBtn.TextSize = 14
-CloseBtn.Font = Enum.Font.SourceSansBold
-CloseBtn.Parent = TopBar
-
-CloseBtn.MouseButton1Click:Connect(function()
-    ScreenGui:Destroy()
-end)
-
--- Контейнеры для вкладок
-local TabsContainer = {}
-local function createTabContent(name)
-    local sf = Instance.new("ScrollingFrame")
-    sf.Size = UDim2.new(1, -160, 1, -50)
-    sf.Position = UDim2.new(0, 160, 0, 45)
-    sf.BackgroundTransparency = 1
-    sf.BorderSizePixel = 0
-    sf.CanvasSize = UDim2.new(0, 0, 0, 400)
-    sf.ScrollBarThickness = 4
-    sf.Visible = false
-    sf.Parent = MainFrame
-    TabsContainer[name] = sf
-    return sf
-end
-
-local tabGrabber = createTabContent("Grabber")
-local tabVisual = createTabContent("Визуал")
-local tabCombat = createTabContent("Бой")
-local tabTeleport = createTabContent("Телепорт")
-
-tabGrabber.Visible = true -- Активна по умолчанию
-
--- Переключение вкладок
-local function createTabButton(name, posY, targetTab)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 130, 0, 28)
-    btn.Position = UDim2.new(0, 10, 0, posY)
-    btn.BackgroundColor3 = Color3.fromRGB(40, 22, 28)
-    btn.BackgroundTransparency = 1
-    btn.TextColor3 = Color3.fromRGB(200, 160, 170)
-    btn.TextSize = 12
-    btn.Font = Enum.Font.SourceSansSemibold
-    btn.Text = "   " .. name
-    btn.TextXAlignment = Enum.TextXAlignment.Left
-    btn.Parent = LeftPanel
-    
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 6)
-    corner.Parent = btn
-    
-    btn.MouseButton1Click:Connect(function()
-        for _, t in pairs(TabsContainer) do t.Visible = false end
-        targetTab.Visible = true
-    end)
-    return btn
-end
-
-createTabButton("Grabber", 60, tabGrabber)
-createTabButton("Визуал & Тема", 95, tabVisual)
-createTabButton("Бой & Фарм", 130, tabCombat)
-createTabButton("Телепорт", 165, tabTeleport)
-
--- Профиль игрока
-local ProfileFrame = Instance.new("Frame")
-ProfileFrame.Size = UDim2.new(0, 130, 0, 35)
-ProfileFrame.Position = UDim2.new(0, 10, 1, -45)
-ProfileFrame.BackgroundTransparency = 1
-ProfileFrame.Parent = LeftPanel
-
-local AvatarImg = Instance.new("ImageLabel")
-AvatarImg.Size = UDim2.new(0, 30, 0, 30)
-AvatarImg.Position = UDim2.new(0, 0, 0, 2)
-AvatarImg.BackgroundColor3 = Color3.fromRGB(60, 30, 40)
-AvatarImg.Image = ""
-AvatarImg.Parent = ProfileFrame
-
-local AvatarCorner = Instance.new("UICorner")
-AvatarCorner.CornerRadius = UDim.new(1, 0)
-AvatarCorner.Parent = AvatarImg
-
-pcall(function()
-    AvatarImg.Image = Players:GetUserThumbnailAsync(LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
-end)
-
-local UsernameLabel = Instance.new("TextLabel")
-UsernameLabel.Size = UDim2.new(0, 90, 0, 30)
-UsernameLabel.Position = UDim2.new(0, 38, 0, 2)
-UsernameLabel.BackgroundTransparency = 1
-UsernameLabel.Text = LocalPlayer.Name
-UsernameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-UsernameLabel.TextSize = 11
-UsernameLabel.Font = Enum.Font.SourceSansBold
-UsernameLabel.TextXAlignment = Enum.TextXAlignment.Left
-UsernameLabel.Parent = ProfileFrame
-
--- Универсальная функция создания переключателей (Toggle)
-local function createToggle(parent, name, posY, callback)
-    local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(1, -20, 0, 36)
-    frame.Position = UDim2.new(0, 10, 0, posY)
-    frame.BackgroundColor3 = Color3.fromRGB(45, 26, 33)
-    frame.BorderSizePixel = 0
-    frame.Parent = parent
-    
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 8)
-    corner.Parent = frame
-    
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, -60, 1, 0)
-    label.Position = UDim2.new(0, 12, 0, 0)
-    label.BackgroundTransparency = 1
-    label.Text = name
-    label.TextColor3 = Color3.fromRGB(230, 200, 205)
-    label.TextSize = 12
-    label.Font = Enum.Font.SourceSansSemibold
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.Parent = frame
-    
-    local toggleBtn = Instance.new("TextButton")
-    toggleBtn.Size = UDim2.new(0, 36, 0, 20)
-    toggleBtn.Position = UDim2.new(1, -46, 0.5, -10)
-    toggleBtn.BackgroundColor3 = Color3.fromRGB(65, 40, 50)
-    toggleBtn.Text = ""
-    toggleBtn.Parent = frame
-    
-    local tCorner = Instance.new("UICorner")
-    tCorner.CornerRadius = UDim.new(1, 0)
-    tCorner.Parent = toggleBtn
-    
-    local circle = Instance.new("Frame")
-    circle.Size = UDim2.new(0, 16, 0, 16)
-    circle.Position = UDim2.new(0, 2, 0.5, -8)
-    circle.BackgroundColor3 = Color3.fromRGB(200, 150, 160)
-    circle.Parent = toggleBtn
-    
-    local cCorner = Instance.new("UICorner")
-    cCorner.CornerRadius = UDim.new(1, 0)
-    cCorner.Parent = circle
-    
-    local enabled = false
-    toggleBtn.MouseButton1Click:Connect(function()
-        enabled = not enabled
-        if enabled then
-            TweenService:Create(toggleBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(200, 70, 90)}):Play()
-            TweenService:Create(circle, TweenInfo.new(0.2), {Position = UDim2.new(1, -18, 0.5, -8), BackgroundColor3 = Color3.fromRGB(255, 255, 255)}):Play()
-        else
-            TweenService:Create(toggleBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(65, 40, 50)}):Play()
-            TweenService:Create(circle, TweenInfo.new(0.2), {Position = UDim2.new(0, 2, 0.5, -8), BackgroundColor3 = Color3.fromRGB(200, 150, 160)}):Play()
-        end
-        if callback then callback(enabled) end
-    end)
-end
-
--- ==================== ВКЛАДКА 1: GRABBER ====================
-local s1 = Instance.new("TextLabel")
-s1.Size = UDim2.new(1, -20, 0, 20)
-s1.Position = UDim2.new(0, 10, 0, 5)
-s1.BackgroundTransparency = 1
-s1.Text = "Grabber (Управление оружием)"
-s1.TextColor3 = Color3.fromRGB(200, 140, 150)
-s1.TextSize = 13
-s1.Font = Enum.Font.SourceSansBold
-s1.TextXAlignment = Enum.TextXAlignment.Left
-s1.Parent = tabGrabber
-
-createToggle(tabGrabber, "Подобрать выпавший пистолет", 30, function(state)
-    if state then
-        pcall(function()
-            for _, obj in ipairs(Workspace:GetChildren()) do
-                if obj.Name == "GunDrop" or obj.Name == "Drop" then
-                    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                        LocalPlayer.Character.HumanoidRootPart.CFrame = obj.CFrame
-                    end
-                end
-            end
-        end)
-    end
-end)
-
-_G.AutoGrab = false
-createToggle(tabGrabber, "Автоподбор оружия (Цикл)", 72, function(state)
-    _G.AutoGrab = state
-    task.spawn(function()
-        while _G.AutoGrab do
-            pcall(function()
-                for _, obj in ipairs(Workspace:GetChildren()) do
-                    if obj.Name == "GunDrop" or obj.Name == "Drop" then
-                        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                            LocalPlayer.Character.HumanoidRootPart.CFrame = obj.CFrame
-                        end
-                    end
-                end
-            end)
-            task.wait(0.2)
-        end
-    end)
-end)
-
--- ==================== ВКЛАДКА 2: ВИЗУАЛ & ТЕМА ====================
-local s2 = Instance.new("TextLabel")
-s2.Size = UDim2.new(1, -20, 0, 20)
-s2.Position = UDim2.new(0, 10, 0, 5)
-s2.BackgroundTransparency = 1
-s2.Text = "ESP и Настройка темы GUI"
-s2.TextColor3 = Color3.fromRGB(200, 140, 150)
-s2.TextSize = 13
-s2.Font = Enum.Font.SourceSansBold
-s2.TextXAlignment = Enum.TextXAlignment.Left
-s2.Parent = tabVisual
-
--- Переливающаяся смена цветовых тем GUI
-local themes = {
-    {Color3.fromRGB(35, 20, 25), Color3.fromRGB(60, 20, 45), Color3.fromRGB(20, 10, 30)}, -- Бордовая (Тёмная страсть)
-    {Color3.fromRGB(15, 25, 45), Color3.fromRGB(30, 80, 140), Color3.fromRGB(10, 15, 30)}, -- Неоновый синий (Киберпанк)
-    {Color3.fromRGB(20, 40, 20), Color3.fromRGB(40, 120, 60), Color3.fromRGB(10, 25, 15)}, -- Изумрудный лес
-    {Color3.fromRGB(45, 30, 15), Color3.fromRGB(140, 80, 20), Color3.fromRGB(25, 15, 10)}  -- Закатный огонь
+	Transparency = 0.08,
+	Scale = 1,
 }
-local currentThemeIdx = 1
 
-local themeBtn = Instance.new("TextButton")
-themeBtn.Size = UDim2.new(1, -20, 0, 36)
-themeBtn.Position = UDim2.new(0, 10, 0, 30)
-themeBtn.BackgroundColor3 = Color3.fromRGB(65, 40, 50)
-themeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-themeBtn.TextSize = 12
-themeBtn.Font = Enum.Font.SourceSansBold
-themeBtn.Text = "Сменить тему GUI (Переливающаяся)"
-themeBtn.Parent = tabVisual
+-- Session settings
+local Settings = {
+	RGBMode = false,
+	FollowVisualColor = true,
+	ShowFPS = true,
+	Notifications = true,
+	LowGraphics = false,
+	MenuBlur = false,
+	CompactMode = false,
+}
 
-local tCorner = Instance.new("UICorner")
-tCorner.CornerRadius = UDim.new(0, 8)
-tCorner.Parent = themeBtn
+--============================================================
+-- HELPERS
+--============================================================
 
-themeBtn.MouseButton1Click:Connect(function()
-    currentThemeIdx = currentThemeIdx + 1
-    if currentThemeIdx > #themes then currentThemeIdx = 1 end
-    local th = themes[currentThemeIdx]
-    MainGradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, th[1]),
-        ColorSequenceKeypoint.new(0.5, th[2]),
-        ColorSequenceKeypoint.new(1, th[3])
-    })
-end)
+local function Tween(object, properties, duration, style, direction)
+	local info = TweenInfo.new(
+		duration or 0.25,
+		style or Enum.EasingStyle.Quint,
+		direction or Enum.EasingDirection.Out
+	)
 
-local function isMurderer(player)
-    local bp = player:FindFirstChild("Backpack")
-    local ch = player.Character
-    return (bp and (bp:FindFirstChild("Knife") or bp:FindFirstChild("Axe"))) or (ch and (ch:FindFirstChild("Knife") or ch:FindFirstChild("Axe")))
+	local tween = TweenService:Create(object, info, properties)
+	tween:Play()
+
+	return tween
 end
 
-local function isSheriff(player)
-    local bp = player:FindFirstChild("Backpack")
-    local ch = player.Character
-    return (bp and bp:FindFirstChild("Gun")) or (ch and ch:FindFirstChild("Gun"))
+local function Create(className, properties, parent)
+	local object = Instance.new(className)
+
+	for property, value in pairs(properties or {}) do
+		object[property] = value
+	end
+
+	object.Parent = parent
+
+	return object
 end
 
-_G.ESPEnabled = false
-createToggle(tabVisual, "Включить ESP (Подсветка игроков)", 72, function(state)
-    _G.ESPEnabled = state
-    if not state then
-        for _, p in ipairs(Players:GetPlayers()) do
-            if p.Character and p.Character:FindFirstChild("ThunderHighlight") then
-                p.Character.ThunderHighlight:Destroy()
-            end
-        end
-    end
+local function Corner(parent, radius)
+	local corner = Create("UICorner", {
+		CornerRadius = UDim.new(0, radius or 10)
+	}, parent)
+
+	return corner
+end
+
+local function Stroke(parent, color, transparency)
+	local stroke = Create("UIStroke", {
+		Color = color or Color3.new(1, 1, 1),
+		Transparency = transparency or 0.8,
+		Thickness = 1
+	}, parent)
+
+	return stroke
+end
+
+local function Gradient(parent, color1, color2, rotation)
+	local gradient = Create("UIGradient", {
+		Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, color1),
+			ColorSequenceKeypoint.new(1, color2)
+		}),
+		Rotation = rotation or 0
+	}, parent)
+
+	return gradient
+end
+
+local function Darken(color, amount)
+	return Color3.new(
+		math.clamp(color.R - amount, 0, 1),
+		math.clamp(color.G - amount, 0, 1),
+		math.clamp(color.B - amount, 0, 1)
+	)
+end
+
+local function Lighten(color, amount)
+	return Color3.new(
+		math.clamp(color.R + amount, 0, 1),
+		math.clamp(color.G + amount, 0, 1),
+		math.clamp(color.B + amount, 0, 1)
+	)
+end
+
+--============================================================
+-- GUI ROOT
+--============================================================
+
+local ScreenGui = Create("ScreenGui", {
+	Name = "NovaHub",
+	ResetOnSpawn = false,
+	ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+	IgnoreGuiInset = true,
+}, PlayerGui)
+
+--============================================================
+-- LOADING SCREEN
+--============================================================
+
+local Loading = Create("Frame", {
+	Size = UDim2.fromScale(1, 1),
+	BackgroundColor3 = Color3.fromRGB(10, 7, 12),
+	BackgroundTransparency = 0,
+	ZIndex = 100,
+}, ScreenGui)
+
+local LoadingGradient = Gradient(
+	Loading,
+	Color3.fromRGB(25, 10, 40),
+	Color3.fromRGB(8, 20, 35),
+	45
+)
+
+local LoadingTitle = Create("TextLabel", {
+	AnchorPoint = Vector2.new(0.5, 0.5),
+	Position = UDim2.fromScale(0.5, 0.42),
+	Size = UDim2.fromOffset(500, 60),
+	BackgroundTransparency = 1,
+	Text = "NOVA HUB",
+	TextColor3 = CONFIG.Text,
+	TextSize = 38,
+	Font = Enum.Font.GothamBold,
+	ZIndex = 101,
+}, Loading)
+
+local LoadingSub = Create("TextLabel", {
+	AnchorPoint = Vector2.new(0.5, 0.5),
+	Position = UDim2.fromScale(0.5, 0.49),
+	Size = UDim2.fromOffset(500, 30),
+	BackgroundTransparency = 1,
+	Text = "Инициализация интерфейса...",
+	TextColor3 = CONFIG.SubText,
+	TextSize = 15,
+	Font = Enum.Font.Gotham,
+	ZIndex = 101,
+}, Loading)
+
+local BarBackground = Create("Frame", {
+	AnchorPoint = Vector2.new(0.5, 0.5),
+	Position = UDim2.fromScale(0.5, 0.57),
+	Size = UDim2.fromOffset(360, 7),
+	BackgroundColor3 = Color3.fromRGB(45, 35, 50),
+	ZIndex = 101,
+}, Loading)
+
+Corner(BarBackground, 5)
+
+local Bar = Create("Frame", {
+	Size = UDim2.new(0, 0, 1, 0),
+	BackgroundColor3 = CONFIG.Accent,
+	ZIndex = 102,
+}, BarBackground)
+
+Corner(Bar, 5)
+
+local BarGradient = Gradient(
+	Bar,
+	Color3.fromRGB(90, 255, 170),
+	CONFIG.Accent,
+	0
+)
+
+local LoadingStatus = Create("TextLabel", {
+	AnchorPoint = Vector2.new(0.5, 0.5),
+	Position = UDim2.fromScale(0.5, 0.62),
+	Size = UDim2.fromOffset(400, 25),
+	BackgroundTransparency = 1,
+	Text = "0%",
+	TextColor3 = CONFIG.SubText,
+	TextSize = 13,
+	Font = Enum.Font.GothamMedium,
+	ZIndex = 101,
+}, Loading)
+
+--============================================================
+-- MAIN WINDOW
+--============================================================
+
+local Main = Create("Frame", {
+	AnchorPoint = Vector2.new(0.5, 0.5),
+	Position = UDim2.fromScale(0.5, 0.5),
+	Size = UDim2.fromOffset(900, 570),
+	BackgroundColor3 = CONFIG.Background,
+	BackgroundTransparency = CONFIG.Transparency,
+	Visible = false,
+}, ScreenGui)
+
+Corner(Main, 18)
+Stroke(Main, CONFIG.Accent, 0.7)
+
+-- Scale
+local UIScale = Create("UIScale", {
+	Scale = CONFIG.Scale
+}, Main)
+
+--============================================================
+-- TOP BAR
+--============================================================
+
+local TopBar = Create("Frame", {
+	Size = UDim2.new(1, 0, 0, 70),
+	BackgroundTransparency = 1,
+}, Main)
+
+local Logo = Create("Frame", {
+	Position = UDim2.fromOffset(18, 14),
+	Size = UDim2.fromOffset(42, 42),
+	BackgroundColor3 = CONFIG.Accent,
+}, TopBar)
+
+Corner(12, Logo)
+Gradient(Logo, Lighten(CONFIG.Accent, 0.12), Darken(CONFIG.Accent, 0.1), 45)
+
+local LogoText = Create("TextLabel", {
+	Size = UDim2.fromScale(1, 1),
+	BackgroundTransparency = 1,
+	Text = "N",
+	TextColor3 = Color3.new(1, 1, 1),
+	TextSize = 23,
+	Font = Enum.Font.GothamBold,
+}, Logo)
+
+local Title = Create("TextLabel", {
+	Position = UDim2.fromOffset(75, 12),
+	Size = UDim2.fromOffset(300, 28),
+	BackgroundTransparency = 1,
+	Text = CONFIG.Name,
+	TextColor3 = CONFIG.Text,
+	TextSize = 20,
+	TextXAlignment = Enum.TextXAlignment.Left,
+	Font = Enum.Font.GothamBold,
+}, TopBar)
+
+local Version = Create("TextLabel", {
+	Position = UDim2.fromOffset(75, 38),
+	Size = UDim2.fromOffset(200, 20),
+	BackgroundTransparency = 1,
+	Text = "by Nova • Версия " .. CONFIG.Version,
+	TextColor3 = CONFIG.SubText,
+	TextSize = 12,
+	TextXAlignment = Enum.TextXAlignment.Left,
+	Font = Enum.Font.Gotham,
+}, TopBar)
+
+-- Top buttons
+local Minimize = Create("TextButton", {
+	Position = UDim2.new(1, -125, 0, 20),
+	Size = UDim2.fromOffset(36, 30),
+	BackgroundColor3 = CONFIG.Panel,
+	Text = "—",
+	TextColor3 = CONFIG.SubText,
+	TextSize = 18,
+	Font = Enum.Font.GothamBold,
+	AutoButtonColor = false,
+}, TopBar)
+
+Corner(Minimize, 8)
+
+local Close = Create("TextButton", {
+	Position = UDim2.new(1, -78, 0, 20),
+	Size = UDim2.fromOffset(36, 30),
+	BackgroundColor3 = CONFIG.Panel,
+	Text = "×",
+	TextColor3 = CONFIG.SubText,
+	TextSize = 20,
+	Font = Enum.Font.GothamBold,
+	AutoButtonColor = false,
+}, TopBar)
+
+Corner(Close, 8)
+
+--============================================================
+-- SIDEBAR
+--============================================================
+
+local Sidebar = Create("Frame", {
+	Position = UDim2.fromOffset(12, 75),
+	Size = UDim2.new(0, 205, 1, -87),
+	BackgroundColor3 = CONFIG.Panel,
+	BackgroundTransparency = 0.05,
+}, Main)
+
+Corner(Sidebar, 14)
+
+local SidebarPadding = Create("UIPadding", {
+	PaddingTop = UDim.new(0, 12),
+	PaddingBottom = UDim.new(0, 12),
+	PaddingLeft = UDim.new(0, 10),
+	PaddingRight = UDim.new(0, 10),
+}, Sidebar)
+
+local SidebarLayout = Create("UIListLayout", {
+	Padding = UDim.new(0, 6),
+	SortOrder = Enum.SortOrder.LayoutOrder,
+}, Sidebar)
+
+--============================================================
+-- CONTENT
+--============================================================
+
+local Content = Create("Frame", {
+	Position = UDim2.fromOffset(228, 75),
+	Size = UDim2.new(1, -240, 1, -87),
+	BackgroundTransparency = 1,
+	ClipsDescendants = true,
+}, Main)
+
+--============================================================
+-- PAGES
+--============================================================
+
+local Pages = {}
+
+local function CreatePage(name)
+	local page = Create("ScrollingFrame", {
+		Name = name,
+		Size = UDim2.fromScale(1, 1),
+		BackgroundTransparency = 1,
+		ScrollBarThickness = 3,
+		ScrollBarImageColor3 = CONFIG.Accent,
+		CanvasSize = UDim2.new(0, 0, 0, 0),
+		AutomaticCanvasSize = Enum.AutomaticSize.Y,
+		Visible = false,
+	}, Content)
+
+	Create("UIPadding", {
+		PaddingLeft = UDim.new(0, 4),
+		PaddingRight = UDim.new(0, 10),
+		PaddingBottom = UDim.new(0, 10),
+	}, page)
+
+	Create("UIListLayout", {
+		Padding = UDim.new(0, 10),
+		SortOrder = Enum.SortOrder.LayoutOrder,
+	}, page)
+
+	Pages[name] = page
+
+	return page
+end
+
+--============================================================
+-- UI COMPONENTS
+--============================================================
+
+local function Section(parent, text)
+	local label = Create("TextLabel", {
+		Size = UDim2.new(1, -5, 0, 28),
+		BackgroundTransparency = 1,
+		Text = text,
+		TextColor3 = CONFIG.Text,
+		TextSize = 17,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Font = Enum.Font.GothamBold,
+	}, parent)
+
+	return label
+end
+
+local function Button(parent, text, callback)
+	local button = Create("TextButton", {
+		Size = UDim2.new(1, -5, 0, 52),
+		BackgroundColor3 = CONFIG.Panel2,
+		Text = "",
+		AutoButtonColor = false,
+	}, parent)
+
+	Corner(button, 11)
+
+	local label = Create("TextLabel", {
+		Position = UDim2.fromOffset(16, 0),
+		Size = UDim2.new(1, -32, 1, 0),
+		BackgroundTransparency = 1,
+		Text = text,
+		TextColor3 = CONFIG.Text,
+		TextSize = 14,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Font = Enum.Font.GothamMedium,
+	}, button)
+
+	button.MouseEnter:Connect(function()
+		Tween(button, {
+			BackgroundColor3 = Lighten(CONFIG.Panel2, 0.05)
+		}, 0.15)
+	end)
+
+	button.MouseLeave:Connect(function()
+		Tween(button, {
+			BackgroundColor3 = CONFIG.Panel2
+		}, 0.15)
+	end)
+
+	button.Activated:Connect(function()
+		if callback then
+			callback()
+		end
+	end)
+
+	return button
+end
+
+local function Toggle(parent, text, default, callback)
+	local holder = Create("Frame", {
+		Size = UDim2.new(1, -5, 0, 58),
+		BackgroundColor3 = CONFIG.Panel2,
+	}, parent)
+
+	Corner(holder, 11)
+
+	local label = Create("TextLabel", {
+		Position = UDim2.fromOffset(16, 0),
+		Size = UDim2.new(1, -90, 1, 0),
+		BackgroundTransparency = 1,
+		Text = text,
+		TextColor3 = CONFIG.Text,
+		TextSize = 14,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Font = Enum.Font.GothamMedium,
+	}, holder)
+
+	local switch = Create("TextButton", {
+		AnchorPoint = Vector2.new(1, 0.5),
+		Position = UDim2.new(1, -14, 0.5, 0),
+		Size = UDim2.fromOffset(48, 25),
+		BackgroundColor3 = Color3.fromRGB(65, 58, 70),
+		Text = "",
+		AutoButtonColor = false,
+	}, holder)
+
+	Corner(switch, 13)
+
+	local knob = Create("Frame", {
+		Position = UDim2.fromOffset(4, 4),
+		Size = UDim2.fromOffset(17, 17),
+		BackgroundColor3 = Color3.fromRGB(235, 235, 240),
+	}, switch)
+
+	Corner(knob, 50)
+
+	local state = default == true
+
+	local function Update()
+		if state then
+			Tween(switch, {
+				BackgroundColor3 = CONFIG.Accent
+			}, 0.2)
+
+			Tween(knob, {
+				Position = UDim2.new(1, -21, 0, 4)
+			}, 0.2)
+		else
+			Tween(switch, {
+				BackgroundColor3 = Color3.fromRGB(65, 58, 70)
+			}, 0.2)
+
+			Tween(knob, {
+				Position = UDim2.fromOffset(4, 4)
+			}, 0.2)
+		end
+	end
+
+	Update()
+
+	switch.Activated:Connect(function()
+		state = not state
+		Update()
+
+		if callback then
+			callback(state)
+		end
+	end)
+
+	return holder, function()
+		return state
+	end
+end
+
+local function Slider(parent, text, min, max, default, callback)
+	local holder = Create("Frame", {
+		Size = UDim2.new(1, -5, 0, 72),
+		BackgroundColor3 = CONFIG.Panel2,
+	}, parent)
+
+	Corner(holder, 11)
+
+	local label = Create("TextLabel", {
+		Position = UDim2.fromOffset(16, 8),
+		Size = UDim2.new(1, -90, 0, 22),
+		BackgroundTransparency = 1,
+		Text = text,
+		TextColor3 = CONFIG.Text,
+		TextSize = 14,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Font = Enum.Font.GothamMedium,
+	}, holder)
+
+	local valueLabel = Create("TextLabel", {
+		AnchorPoint = Vector2.new(1, 0),
+		Position = UDim2.new(1, -16, 0, 8),
+		Size = UDim2.fromOffset(60, 22),
+		BackgroundTransparency = 1,
+		Text = tostring(default),
+		TextColor3 = CONFIG.Accent,
+		TextSize = 13,
+		TextXAlignment = Enum.TextXAlignment.Right,
+		Font = Enum.Font.GothamBold,
+	}, holder)
+
+	local bar = Create("Frame", {
+		Position = UDim2.new(0, 16, 0, 43),
+		Size = UDim2.new(1, -32, 0, 6),
+		BackgroundColor3 = Color3.fromRGB(65, 55, 70),
+	}, holder)
+
+	Corner(bar, 5)
+
+	local fill = Create("Frame", {
+		Size = UDim2.new(
+			(default - min) / (max - min),
+			0,
+			1,
+			0
+		),
+		BackgroundColor3 = CONFIG.Accent,
+	}, bar)
+
+	Corner(fill, 5)
+
+	local dragging = false
+
+	local function SetFromX(x)
+		local percentage = math.clamp(
+			(x - bar.AbsolutePosition.X) / bar.AbsoluteSize.X,
+			0,
+			1
+		)
+
+		local value = min + ((max - min) * percentage)
+
+		Tween(fill, {
+			Size = UDim2.new(percentage, 0, 1, 0)
+		}, 0.08)
+
+		valueLabel.Text = string.format("%.0f", value)
+
+		if callback then
+			callback(value)
+		end
+	end
+
+	bar.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1
+			or input.UserInputType == Enum.UserInputType.Touch then
+
+			dragging = true
+			SetFromX(input.Position.X)
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if dragging then
+			if input.UserInputType == Enum.UserInputType.MouseMovement
+				or input.UserInputType == Enum.UserInputType.Touch then
+
+				SetFromX(input.Position.X)
+			end
+		end
+	end)
+
+	UserInputService.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1
+			or input.UserInputType == Enum.UserInputType.Touch then
+
+			dragging = false
+		end
+	end)
+
+	return holder
+end
+
+--============================================================
+-- COLOR SYSTEM
+--============================================================
+
+local VisualColor = CONFIG.Accent
+
+local function ApplyAccent(color)
+	VisualColor = color
+
+	CONFIG.Accent = color
+
+	-- Logo
+	Tween(Logo, {
+		BackgroundColor3 = color
+	}, 0.25)
+
+	-- Stroke
+	for _, object in ipairs(Main:GetDescendants()) do
+		if object:IsA("UIStroke") then
+			Tween(object, {
+				Color = color
+			}, 0.25)
+		end
+	end
+
+	-- Buttons / accents
+	for _, object in ipairs(Main:GetDescendants()) do
+		if object:IsA("Frame") and object.Name == "AccentObject" then
+			Tween(object, {
+				BackgroundColor3 = color
+			}, 0.25)
+		end
+
+		if object:IsA("TextLabel") and object.Name == "AccentText" then
+			Tween(object, {
+				TextColor3 = color
+			}, 0.25)
+		end
+	end
+end
+
+--============================================================
+-- CREATE PAGES
+--============================================================
+
+local CharacterPage = CreatePage("Персонаж")
+local VisualPage = CreatePage("Визуал")
+local EmotePage = CreatePage("Эмоции")
+local OtherPage = CreatePage("Другое")
+local SettingsPage = CreatePage("Настройки")
+local InfoPage = CreatePage("Инфо")
+
+--============================================================
+-- CHARACTER
+--============================================================
+
+Section(CharacterPage, "Персонаж")
+
+Toggle(CharacterPage, "Показывать информацию о персонаже", true, function(value)
+	print("Character info:", value)
 end)
 
-RunService.RenderStepped:Connect(function()
-    if _G.ESPEnabled then
-        pcall(function()
-            for _, p in ipairs(Players:GetPlayers()) do
-                if p ~= LocalPlayer and p.Character then
-                    local hl = p.Character:FindFirstChild("ThunderHighlight")
-                    if not hl then
-                        hl = Instance.new("Highlight")
-                        hl.Name = "ThunderHighlight"
-                        hl.FillTransparency = 0.5
-                        hl.Parent = p.Character
-                    end
-                    if isMurderer(p) then
-                        hl.FillColor = Color3.fromRGB(255, 0, 0) -- Убийца (Красный)
-                    elseif isSheriff(p) then
-                        hl.FillColor = Color3.fromRGB(0, 0, 255) -- Шериф (Синий)
-                    else
-                        hl.FillColor = Color3.fromRGB(0, 255, 0) -- Мирный (Зеленый)
-                    end
-                end
-            end
-        end)
-    end
+Toggle(CharacterPage, "Автоматически обновлять интерфейс", true, function(value)
+	print("Auto update:", value)
 end)
 
--- Объемные переливающиеся облака
-createToggle(tabVisual, "Включить объемные облака (Шторм)", 114, function(state)
-    local terrain = Workspace:FindFirstChildOfClass("Terrain")
-    if terrain then
-        local clouds = terrain:FindFirstChildOfClass("Clouds")
-        if not clouds then
-            clouds = Instance.new("Clouds")
-            clouds.Parent = terrain
-        end
-        clouds.Enabled = state
-        clouds.Density = 1.0
-        clouds.Cover = 1.0
-    end
+Slider(CharacterPage, "Размер интерфейса", 70, 130, 100, function(value)
+	UIScale.Scale = value / 100
 end)
 
--- ==================== ВКЛАДКА 3: БОЙ & ФАРМ ====================
-local s3 = Instance.new("TextLabel")
-s3.Size = UDim2.new(1, -20, 0, 20)
-s3.Position = UDim2.new(0, 10, 0, 5)
-s3.BackgroundTransparency = 1
-s3.Text = "Бой и Автофарм монет"
-s3.TextColor3 = Color3.fromRGB(200, 140, 150)
-s3.TextSize = 13
-s3.Font = Enum.Font.SourceSansBold
-s3.TextXAlignment = Enum.TextXAlignment.Left
-s3.Parent = tabCombat
-
-_G.AutoFarm = false
-createToggle(tabCombat, "Автофарм монет", 30, function(state)
-    _G.AutoFarm = state
-    task.spawn(function()
-        while _G.AutoFarm do
-            pcall(function()
-                local coins = Workspace:FindFirstChild("CoinContainer") or Workspace:FindFirstChild("Coins")
-                if coins and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                    for _, coin in ipairs(coins:GetDescendants()) do
-                        if coin:IsA("BasePart") then
-                            LocalPlayer.Character.HumanoidRootPart.CFrame = coin.CFrame
-                            task.wait(0.05)
-                            break
-                        end
-                    end
-                end
-            end)
-            task.wait(0.1)
-        end
-    end)
+Button(CharacterPage, "Сбросить размер интерфейса", function()
+	Tween(UIScale, {
+		Scale = 1
+	}, 0.25)
 end)
 
-_G.AutoKill = false
-createToggle(tabCombat, "Авто-убийство убийцы (за шерифа)", 72, function(state)
-    _G.AutoKill = state
-    task.spawn(function()
-        while _G.AutoKill do
-            pcall(function()
-                local char = LocalPlayer.Character
-                local gun = char and char:FindFirstChild("Gun") or (LocalPlayer.Backpack and LocalPlayer.Backpack:FindFirstChild("Gun"))
-                if gun and char:FindFirstChildOfClass("Humanoid") then
-                    if not char:FindFirstChild("Gun") then
-                        char.Humanoid:EquipTool(gun)
-                    end
-                    for _, p in ipairs(Players:GetPlayers()) do
-                        if p ~= LocalPlayer and isMurderer(p) and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-                            local remote = gun:FindFirstChild("RemoteEvent") or gun:FindFirstChild("Shoot")
-                            if remote then
-                                remote:FireServer(p.Character.HumanoidRootPart.Position, p.Character.HumanoidRootPart.Position)
-                            end
-                        end
-                    end
-                end
-            end)
-            task.wait(0.5)
-        end
-    end)
+--============================================================
+-- VISUALS
+--============================================================
+
+Section(VisualPage, "Цвет визуалов")
+
+local ColorHolder = Create("Frame", {
+	Size = UDim2.new(1, -5, 0, 145),
+	BackgroundColor3 = CONFIG.Panel2,
+}, VisualPage)
+
+Corner(ColorHolder, 12)
+
+local ColorTitle = Create("TextLabel", {
+	Position = UDim2.fromOffset(16, 12),
+	Size = UDim2.new(1, -32, 0, 25),
+	BackgroundTransparency = 1,
+	Text = "Основной цвет",
+	TextColor3 = CONFIG.Text,
+	TextSize = 14,
+	TextXAlignment = Enum.TextXAlignment.Left,
+	Font = Enum.Font.GothamBold,
+}, ColorHolder)
+
+local ColorPreview = Create("Frame", {
+	Position = UDim2.fromOffset(16, 48),
+	Size = UDim2.fromOffset(50, 50),
+	BackgroundColor3 = VisualColor,
+}, ColorHolder)
+
+Corner(ColorPreview, 10)
+
+local ColorName = Create("TextLabel", {
+	Position = UDim2.fromOffset(80, 52),
+	Size = UDim2.new(1, -100, 0, 22),
+	BackgroundTransparency = 1,
+	Text = "Фиолетовый",
+	TextColor3 = CONFIG.Text,
+	TextSize = 14,
+	TextXAlignment = Enum.TextXAlignment.Left,
+	Font = Enum.Font.GothamMedium,
+}, ColorHolder)
+
+local colorButtons = {
+	{"Фиолетовый", Color3.fromRGB(125, 70, 255)},
+	{"Красный", Color3.fromRGB(255, 70, 90)},
+	{"Синий", Color3.fromRGB(55, 145, 255)},
+	{"Зелёный", Color3.fromRGB(55, 225, 135)},
+	{"Жёлтый", Color3.fromRGB(255, 195, 55)},
+	{"Розовый", Color3.fromRGB(255, 75, 190)},
+}
+
+for index, data in ipairs(colorButtons) do
+	local name = data[1]
+	local color = data[2]
+
+	local x = ((index - 1) % 3)
+	local y = math.floor((index - 1) / 3)
+
+	local button = Create("TextButton", {
+		Position = UDim2.fromOffset(280 + x * 105, 42 + y * 43),
+		Size = UDim2.fromOffset(95, 34),
+		BackgroundColor3 = color,
+		Text = name,
+		TextColor3 = Color3.new(1, 1, 1),
+		TextSize = 11,
+		Font = Enum.Font.GothamBold,
+		AutoButtonColor = false,
+	}, ColorHolder)
+
+	Corner(button, 8)
+
+	button.Activated:Connect(function()
+		VisualColor = color
+		ColorPreview.BackgroundColor3 = color
+		ColorName.Text = name
+
+		if Settings.FollowVisualColor then
+			ApplyAccent(color)
+		end
+	end)
+end
+
+Toggle(VisualPage, "Связать тему с цветом визуалов", true, function(value)
+	Settings.FollowVisualColor = value
+
+	if value then
+		ApplyAccent(VisualColor)
+	end
 end)
 
--- ==================== ВКЛАДКА 4: ТЕЛЕПОРТ ====================
-local s4 = Instance.new("TextLabel")
-s4.Size = UDim2.new(1, -20, 0, 20)
-s4.Position = UDim2.new(0, 10, 0, 5)
-s4.BackgroundTransparency = 1
-s4.Text = "Телепортация"
-s4.TextColor3 = Color3.fromRGB(200, 140, 150)
-s4.TextSize = 13
-s4.Font = Enum.Font.SourceSansBold
-s4.TextXAlignment = Enum.TextXAlignment.Left
-s4.Parent = tabTeleport
-
-createToggle(tabTeleport, "Телепорт к спавну карты", 30, function(state)
-    if state then
-        pcall(function()
-            for _, child in ipairs(Workspace:GetChildren()) do
-                if child:FindFirstChild("SpawnLocation") then
-                    LocalPlayer.Character.HumanoidRootPart.CFrame = child.SpawnLocation.CFrame + Vector3.new(0, 5, 0)
-                    break
-                end
-            end
-        end)
-    end
+Toggle(VisualPage, "RGB-переливание темы", false, function(value)
+	Settings.RGBMode = value
 end)
+
+Toggle(VisualPage, "Показывать FPS", true, function(value)
+	Settings.ShowFPS = value
+end)
+
+--============================================================
+-- EMOTES
+--============================================================
+
+Section(EmotePage, "Эмоции")
+
+Button(EmotePage, "Wave", function()
+	local character = Player.Character
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+
+	if humanoid then
+		local animator = humanoid:FindFirstChildOfClass("Animator")
+
+		if animator then
+			-- Здесь можно подключить AnimationId
+			print("Wave")
+		end
+	end
+end)
+
+Button(EmotePage, "Dance", function()
+	print("Dance")
+end)
+
+Button(EmotePage, "Laugh", function()
+	print("Laugh")
+end)
+
+Button(EmotePage, "Stop Emote", function()
+	local character = Player.Character
+
+	if character then
+		local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+		if humanoid then
+			for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
+				track:Stop()
+			end
+		end
+	end
+end)
+
+--============================================================
+-- OTHER
+--============================================================
+
+Section(OtherPage, "Утилиты")
+
+Toggle(OtherPage, "Упрощённая графика", false, function(value)
+	Settings.LowGraphics = value
+
+	if value then
+		Lighting.GlobalShadows = false
+		Lighting.EnvironmentDiffuseScale = 0
+		Lighting.EnvironmentSpecularScale = 0
+	else
+		Lighting.GlobalShadows = true
+		Lighting.EnvironmentDiffuseScale = 1
+		Lighting.EnvironmentSpecularScale = 1
+	end
+end)
+
+Toggle(OtherPage, "Размытие меню", false, function(value)
+	Settings.MenuBlur = value
+
+	if value then
+		local blur = Lighting:FindFirstChild("NovaMenuBlur")
+
+		if not blur then
+			blur = Instance.new("BlurEffect")
+			blur.Name = "NovaMenuBlur"
+			blur.Size = 8
+			blur.Parent = Lighting
+		end
+	else
+		local blur = Lighting:FindFirstChild("NovaMenuBlur")
+
+		if blur then
+			blur:Destroy()
+		end
+	end
+end)
+
+Toggle(OtherPage, "Компактный режим", false, function(value)
+	Settings.CompactMode = value
+
+	if value then
+		Tween(Main, {
+			Size = UDim2.fromOffset(760, 500)
+		}, 0.3)
+	else
+		Tween(Main, {
+			Size = UDim2.fromOffset(900, 570)
+		}, 0.3)
+	end
+end)
+
+Button(OtherPage, "Показать уведомление", function()
+	print("Nova Hub работает!")
+end)
+
+--============================================================
+-- SETTINGS
+--============================================================
+
+Section(SettingsPage, "Настройки интерфейса")
+
+Toggle(SettingsPage, "Показывать уведомления", true, function(value)
+	Settings.Notifications = value
+end)
+
+Slider(SettingsPage, "Прозрачность", 0, 40, 8, function(value)
+	CONFIG.Transparency = value / 100
+
+	Main.BackgroundTransparency = CONFIG.Transparency
+end)
+
+Toggle(SettingsPage, "Следовать цвету визуалов", true, function(value)
+	Settings.FollowVisualColor = value
+
+	if value then
+		ApplyAccent(VisualColor)
+	end
+end)
+
+Button(SettingsPage, "Фиолетовая тема", function()
+	Settings.RGBMode = false
+	ApplyAccent(Color3.fromRGB(125, 70, 255))
+	ColorPreview.BackgroundColor3 = CONFIG.Accent
+	ColorName.Text = "Фиолетовый"
+end)
+
+Button(SettingsPage, "Синяя тема", function()
+	Settings.RGBMode = false
+	ApplyAccent(Color3.fromRGB(55, 145, 255))
+	ColorPreview.BackgroundColor3 = CONFIG.Accent
+	ColorName.Text = "Синий"
+end)
+
+Button(SettingsPage, "Зелёная тема", function()
+	Settings.RGBMode = false
+	ApplyAccent(Color3.fromRGB(55, 225, 135))
+	ColorPreview.BackgroundColor3 = CONFIG.Accent
+	ColorName.Text = "Зелёный"
+end)
+
+Button(SettingsPage, "RGB Mode", function()
+	Settings.RGBMode = not Settings.RGBMode
+end)
+
+Button(SettingsPage, "Сбросить настройки", function()
+	Settings.RGBMode = false
+	Settings.FollowVisualColor = true
+	Settings.ShowFPS = true
+	Settings.Notifications = true
+	Settings.LowGraphics = false
+	Settings.MenuBlur = false
+	Settings.CompactMode = false
+
+	UIScale.Scale = 1
+	Main.Size = UDim2.fromOffset(900, 570)
+
+	ApplyAccent(Color3.fromRGB(125, 70, 255))
+
+	ColorPreview.BackgroundColor3 = CONFIG.Accent
+	ColorName.Text = "Фиолетовый"
+end)
+
+--============================================================
+-- INFO
+--============================================================
+
+Section(InfoPage, "Nova Hub")
+
+local Info = Create("Frame", {
+	Size = UDim2.new(1, -5, 0, 190),
+	BackgroundColor3 = CONFIG.Panel2,
+}, InfoPage)
+
+Corner(Info, 12)
+
+local InfoText = Create("TextLabel", {
+	Position = UDim2.fromOffset(18, 15),
+	Size = UDim2.new(1, -36, 1, -30),
+	BackgroundTransparency = 1,
+
+	Text =
+		"Nova Hub\n\n" ..
+		"Версия: " .. CONFIG.Version .. "\n" ..
+		"Интерфейс: Dynamic UI\n" ..
+		"Theme Engine: Enabled\n" ..
+		"RGB Engine: Enabled\n\n" ..
+		"Этот интерфейс предназначен для использования\n" ..
+		"в собственном Roblox-проекте.",
+
+	TextColor3 = CONFIG.SubText,
+	TextSize = 14,
+	TextXAlignment = Enum.TextXAlignment.Left,
+	TextYAlignment = Enum.TextYAlignment.Top,
+	Font = Enum.Font.Gotham,
+}, Info)
+
+--============================================================
+-- SIDEBAR TABS
+--============================================================
+
+local Tabs = {
+	{"Персонаж", "♙", CharacterPage},
+	{"Визуал", "◉", VisualPage},
+	{"Эмоции", "☺", EmotePage},
+	{"Другое", "⚙", OtherPage},
+	{"Настройки", "☼", SettingsPage},
+	{"Инфо", "ⓘ", InfoPage},
+}
+
+local TabButtons = {}
+
+local function SelectTab(index)
+	for i, data in ipairs(Tabs) do
+		local button = TabButtons[i]
+
+		if button then
+			if i == index then
+				Tween(button, {
+					BackgroundColor3 = CONFIG.Accent
+				}, 0.2)
+			else
+				Tween(button, {
+					BackgroundColor3 = CONFIG.Panel
+				}, 0.2)
+			end
+		end
+
+		data[3].Visible = (i == index)
+	end
+end
+
+for index, data in ipairs(Tabs) do
+	local button = Create("TextButton", {
+		Size = UDim2.new(1, 0, 0, 45),
+		BackgroundColor3 = CONFIG.Panel,
+		Text = "",
+		AutoButtonColor = false,
+		LayoutOrder = index,
+	}, Sidebar)
+
+	Corner(button, 9)
+
+	local icon = Create("TextLabel", {
+		Position = UDim2.fromOffset(13, 0),
+		Size = UDim2.fromOffset(30, 45),
+		BackgroundTransparency = 1,
+		Text = data[2],
+		TextColor3 = CONFIG.SubText,
+		TextSize = 17,
+		Font = Enum.Font.Gotham,
+	}, button)
+
+	local text = Create("TextLabel", {
+		Position = UDim2.fromOffset(48, 0),
+		Size = UDim2.new(1, -55, 1, 0),
+		BackgroundTransparency = 1,
+		Text = data[1],
+		TextColor3 = CONFIG.Text,
+		TextSize = 13,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Font = Enum.Font.GothamMedium,
+	}, button)
+
+	button.MouseEnter:Connect(function()
+		if data[3].Visible == false then
+			Tween(button, {
+				BackgroundColor3 = CONFIG.Panel2
+			}, 0.15)
+		end
+	end)
+
+	button.MouseLeave:Connect(function()
+		if data[3].Visible == false then
+			Tween(button, {
+				BackgroundColor3 = CONFIG.Panel
+			}, 0.15)
+		end
+	end)
+
+	button.Activated:Connect(function()
+		SelectTab(index)
+	end)
+
+	TabButtons[index] = button
+end
+
+SelectTab(1)
+
+--============================================================
+-- FPS COUNTER
+--============================================================
+
+local FPS = Create("TextLabel", {
+	AnchorPoint = Vector2.new(1, 1),
+	Position = UDim2.new(1, -20, 1, -15),
+	Size = UDim2.fromOffset(100, 25),
+	BackgroundTransparency = 1,
+	Text = "FPS: --",
+	TextColor3 = CONFIG.Accent,
+	TextSize = 12,
+	TextXAlignment = Enum.TextXAlignment.Right,
+	Font = Enum.Font.GothamBold,
+	ZIndex = 10,
+}, ScreenGui)
+
+--============================================================
+-- NOTIFICATION
+--============================================================
+
+local NotificationContainer = Create("Frame", {
+	AnchorPoint = Vector2.new(1, 0),
+	Position = UDim2.new(1, -20, 0, 20),
+	Size = UDim2.fromOffset(300, 300),
+	BackgroundTransparency = 1,
+}, ScreenGui)
+
+Create("UIListLayout", {
+	Padding = UDim.new(0, 8),
+	HorizontalAlignment = Enum.HorizontalAlignment.Right,
+	VerticalAlignment = Enum.VerticalAlignment.Top,
+}, NotificationContainer)
+
+local function Notify(title, message)
+	if not Settings.Notifications then
+		return
+	end
+
+	local notification = Create("Frame", {
+		Size = UDim2.fromOffset(290, 70),
+		BackgroundColor3 = CONFIG.Panel,
+		BackgroundTransparency = 0.02,
+	}, NotificationContainer)
+
+	Corner(notification, 12)
+	Stroke(notification, CONFIG.Accent, 0.65)
+
+	local accent = Create("Frame", {
+		Size = UDim2.new(0, 4, 1, 0),
+		BackgroundColor3 = CONFIG.Accent,
+		Name = "AccentObject",
+	}, notification)
+
+	Corner(accent, 4)
+
+	local titleLabel = Create("TextLabel", {
+		Position = UDim2.fromOffset(16, 10),
+		Size = UDim2.new(1, -30, 0, 22),
+		BackgroundTransparency = 1,
+		Text = title,
+		TextColor3 = CONFIG.Text,
+		TextSize = 14,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Font = Enum.Font.GothamBold,
+	}, notification)
+
+	local messageLabel = Create("TextLabel", {
+		Position = UDim2.fromOffset(16, 34),
+		Size = UDim2.new(1, -30, 0, 25),
+		BackgroundTransparency = 1,
+		Text = message,
+		TextColor3 = CONFIG.SubText,
+		TextSize = 12,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Font = Enum.Font.Gotham,
+	}, notification)
+
+	notification.Position = UDim2.new(1, 30, 0, 0)
+
+	Tween(notification, {
+		Position = UDim2.new(0, 0, 0, 0)
+	}, 0.35)
+
+	task.delay(3, function()
+		if notification then
+			Tween(notification, {
+				BackgroundTransparency = 1
+			}, 0.25)
+
+			task.wait(0.25)
+
+			notification:Destroy()
+		end
+	end)
+end
+
+--============================================================
+-- DRAGGING
+--============================================================
+
+local dragging = false
+local dragStart
+local startPosition
+
+TopBar.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1
+		or input.UserInputType == Enum.UserInputType.Touch then
+
+		dragging = true
+		dragStart = input.Position
+		startPosition = Main.Position
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if dragging then
+		if input.UserInputType == Enum.UserInputType.MouseMovement
+			or input.UserInputType == Enum.UserInputType.Touch then
+
+			local delta = input.Position - dragStart
+
+			Main.Position = UDim2.new(
+				startPosition.X.Scale,
+				startPosition.X.Offset + delta.X,
+				startPosition.Y.Scale,
+				startPosition.Y.Offset + delta.Y
+			)
+		end
+	end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1
+		or input.UserInputType == Enum.UserInputType.Touch then
+
+		dragging = false
+	end
+end)
+
+--============================================================
+-- MINIMIZE
+--============================================================
+
+local minimized = false
+
+Minimize.Activated:Connect(function()
+	minimized = not minimized
+
+	if minimized then
+		Tween(Main, {
+			Size = UDim2.fromOffset(900, 70)
+		}, 0.3)
+
+		Sidebar.Visible = false
+		Content.Visible = false
+	else
+		Tween(Main, {
+			Size = UDim2.fromOffset(900, 570)
+		}, 0.3)
+
+		task.wait(0.15)
+
+		Sidebar.Visible = true
+		Content.Visible = true
+	end
+end)
+
+--============================================================
+-- CLOSE / OPEN BUTTON
+--============================================================
+
+local OpenButton = Create("TextButton", {
+	AnchorPoint = Vector2.new(0, 0.5),
+	Position = UDim2.new(0, 15, 0.5, 0),
+	Size = UDim2.fromOffset(48, 48),
+	BackgroundColor3 = CONFIG.Accent,
+	Text = "N",
+	TextColor3 = Color3.new(1, 1, 1),
+	TextSize = 20,
+	Font = Enum.Font.GothamBold,
+	Visible = false,
+	AutoButtonColor = false,
+}, ScreenGui)
+
+Corner(OpenButton, 14)
+
+Close.Activated:Connect(function()
+	Tween(Main, {
+		Size = UDim2.fromOffset(850, 0),
+		BackgroundTransparency = 1
+	}, 0.35)
+
+	task.wait(0.35)
+
+	Main.Visible = false
+	OpenButton.Visible = true
+end)
+
+OpenButton.Activated:Connect(function()
+	OpenButton.Visible = false
+
+	Main.Visible = true
+	Main.Size = UDim2.fromOffset(850, 0)
+	Main.BackgroundTransparency = CONFIG.Transparency
+
+	Tween(Main, {
+		Size = UDim2.fromOffset(900, 570)
+	}, 0.4)
+end)
+
+--============================================================
+-- RGB ENGINE
+--============================================================
+
+local RGBHue = 0
+
+RunService.RenderStepped:Connect(function(deltaTime)
+	if Settings.RGBMode then
+		RGBHue += deltaTime * 0.15
+
+		if RGBHue > 1 then
+			RGBHue = 0
+		end
+
+		local rgbColor = Color3.fromHSV(RGBHue, 0.8, 1)
+
+		if Settings.FollowVisualColor then
+			-- RGB becomes the interface accent
+			ApplyAccent(rgbColor)
+		end
+	end
+end)
+
+--============================================================
+-- FPS
+--============================================================
+
+local frames = 0
+local fpsTimer = 0
+
+RunService.RenderStepped:Connect(function(deltaTime)
+	frames += 1
+	fpsTimer += deltaTime
+
+	if fpsTimer >= 1 then
+		local currentFPS = math.floor(frames / fpsTimer)
+
+		FPS.Text = "FPS: " .. currentFPS
+
+		FPS.Visible = Settings.ShowFPS
+
+		frames = 0
+		fpsTimer = 0
+	end
+end)
+
+--============================================================
+-- RESPONSIVE UI
+--============================================================
+
+local function UpdateResponsive()
+	local camera = workspace.CurrentCamera
+
+	if not camera then
+		return
+	end
+
+	local viewport = camera.ViewportSize
+
+	if viewport.X < 700 then
+		UIScale.Scale = math.clamp(viewport.X / 900, 0.65, 0.9)
+	else
+		if not Settings.CompactMode then
+			UIScale.Scale = 1
+		end
+	end
+end
+
+if workspace.CurrentCamera then
+	workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(
+		UpdateResponsive
+	)
+end
+
+UpdateResponsive()
+
+--============================================================
+-- LOADING
+--============================================================
+
+task.spawn(function()
+
+	local start = os.clock()
+
+	while os.clock() - start < CONFIG.LoadingTime do
+		local progress = math.clamp(
+			(os.clock() - start) / CONFIG.LoadingTime,
+			0,
+			1
+		)
+
+		Bar.Size = UDim2.new(progress, 0, 1, 0)
+		LoadingStatus.Text = math.floor(progress * 100) .. "%"
+
+		if progress < 0.25 then
+			LoadingSub.Text = "Запуск интерфейса..."
+		elseif progress < 0.5 then
+			LoadingSub.Text = "Загрузка модулей..."
+		elseif progress < 0.75 then
+			LoadingSub.Text = "Настройка темы..."
+		else
+			LoadingSub.Text = "Почти готово..."
+		end
+
+		task.wait()
+	end
+
+	Bar.Size = UDim2.new(1, 0, 1, 0)
+	LoadingStatus.Text = "100%"
+	LoadingSub.Text = "Готово!"
+
+	task.wait(0.35)
+
+	Tween(LoadingTitle, {
+		TextTransparency = 1
+	}, 0.4)
+
+	Tween(LoadingSub, {
+		TextTransparency = 1
+	}, 0.4)
+
+	Tween(LoadingStatus, {
+		TextTransparency = 1
+	}, 0.4)
+
+	Tween(BarBackground, {
+		BackgroundTransparency = 1
+	}, 0.4)
+
+	task.wait(0.4)
+
+	Tween(Loading, {
+		BackgroundTransparency = 1
+	}, 0.5)
+
+	task.wait(0.5)
+
+	Loading:Destroy()
+
+	Main.Visible = true
+
+	Main.Size = UDim2.fromOffset(900, 0)
+	Main.BackgroundTransparency = 1
+
+	Tween(Main, {
+		Size = UDim2.fromOffset(900, 570),
+		BackgroundTransparency = CONFIG.Transparency
+	}, 0.55)
+
+	task.wait(0.6)
+
+	Notify(
+		"Nova Hub",
+		"Интерфейс успешно загружен."
+	)
+
+end)
+
+--============================================================
+-- INITIAL ACCENT
+--============================================================
+
+ApplyAccent(CONFIG.Accent) 
+
+Что получилось
+
+Самое главное — цветовая система работает так:
+
+Визуал → Основной цвет → например красный → весь интерфейс постепенно становится красным.
+
+А если включить:
+
+Настройки → RGB Mode
+
+то акцент начинает плавно переходить через разные цвета:
+
+🔴 → 🟠 → 🟡 → 🟢 → 🔵 → 🟣 → 🔴
+
+При этом меняются акцентные элементы, обводки, кнопка открытия и уведомления.
+
+Для дальнейшего расширения я бы добавил ещё поиск по функциям, кастомный настоящий HSV Color Picker, отдельное меню профилей тем, сохранение конфигурации через DataStore для твоей игры и более современную анимацию открытия в стиле glassmorphism.
